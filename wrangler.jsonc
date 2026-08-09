@@ -16,6 +16,12 @@
 			"bucket_name": "coinradar-emdash-media","preview_bucket_name": "coinradar-emdash-media",
 		},
 	],
+	"kv_namespaces": [
+		{
+			"binding": "SESSION",
+			"id": "3bfed446cc2448aca436181ccc429305"
+		}
+	],
 	// Worker Loader for plugin sandboxing
 	"worker_loaders": [
 		{
