@@ -1,0 +1,91 @@
+---
+// Blog post detail (/blog/<slug>/). Thin route shell: owns BaseLayout + SEO and composes the Figma
+// "Pixel Quests - Blog Post" frame (node 5:128) via <BlogArticle> + <RelatedPosts>. Server-rendered:
+// the post comes from the EmDash `posts` collection (D1) at request time — no getStaticPaths — and
+// the Portable Text body renders through <PortableText> into BlogArticle's prose slot. The full
+// sorted list feeds prev/next + related, off the SAME query the listing uses, so links never drift.
+import BlogArticle from "@components/Sections/Blog/BlogArticle.astro";
+import RelatedPosts from "@components/Sections/Blog/RelatedPosts.astro";
+import siteData from "@config/siteData.json";
+import { siteLocale } from "@config/siteSettings.json";
+import { getPost, getSortedPosts, portableTextToPlain } from "@js/blogData";
+import { getAdjacentPosts, getRelatedPosts } from "@js/postCards";
+import { readingTime } from "@js/readingTime";
+import { getArticleSchema, getBreadcrumbSchema, organizationId } from "@js/schema";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { PortableText } from "emdash/ui";
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/404");
+
+const [{ post: entry, cacheHint }, { posts }] = await Promise.all([
+  getPost(slug),
+  getSortedPosts(),
+]);
+if (!entry) return Astro.redirect("/404");
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+
+const { data } = entry;
+
+// Byline: the post's primary EmDash byline, falling back to siteData.
+const author = { name: data.authorName ?? siteData.author.name };
+
+const readMinutes = readingTime(portableTextToPlain(data.body));
+const dateLabel = data.pubDate
+  .toLocaleDateString(siteLocale, { month: "short", day: "numeric", year: "numeric" })
+  .toUpperCase();
+const dateISO = data.pubDate.toISOString();
+
+const { prev, next } = getAdjacentPosts(posts, entry.id);
+const related = getRelatedPosts(posts, entry.id, 2);
+
+// SEO: BlogPosting + a BreadcrumbList matching the visible breadcrumb (never emit one
+// without the other). Absolute URLs resolve against `site`.
+const canonical = new URL(`/blog/${entry.id}/`, Astro.site).href;
+// author's public URL (the byline's websiteUrl), resolved absolute when present; publisher points at
+// the same Organization @id BaseHead emits site-wide, so the Article joins that graph by reference.
+const authorUrl = data.authorUrl ? new URL(data.authorUrl, Astro.site).href : undefined;
+const articleSchema = getArticleSchema({
+  headline: data.title,
+  description: data.description,
+  url: canonical,
+  image: new URL(data.heroImage.src, Astro.site).href,
+  datePublished: dateISO,
+  dateModified: data.updatedDate?.toISOString(),
+  authorName: author.name,
+  authorUrl,
+  inLanguage: siteLocale,
+  publisherId: organizationId(canonical),
+});
+const breadcrumbSchema = getBreadcrumbSchema([
+  { name: "Home", url: new URL("/", Astro.site).href },
+  { name: "Blog", url: new URL("/blog/", Astro.site).href },
+  { name: data.title, url: canonical },
+]);
+---
+
+<BaseLayout
+  title={`${data.title} — ${siteData.name}`}
+  description={data.description}
+  image={data.heroImage}
+  schema={[articleSchema, breadcrumbSchema]}
+  article={{ published: data.pubDate, modified: data.updatedDate, author: author.name }}
+>
+  <div class="site-container py-8 md:py-12">
+    <div class="mx-auto flex max-w-[800px] flex-col gap-12">
+      <BlogArticle
+        post={data}
+        author={author}
+        dateLabel={dateLabel}
+        dateISO={dateISO}
+        readMinutes={readMinutes}
+        prev={prev}
+        next={next}
+      >
+        <PortableText value={data.body} />
+      </BlogArticle>
+
+      <RelatedPosts posts={related} />
+    </div>
+  </div>
+</BaseLayout>

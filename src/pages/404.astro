@@ -1,33 +1,16 @@
 ---
-import Base from "../layouts/Base.astro";
+// 404 (served for any unmatched route). Thin route shell: owns BaseLayout + SEO (noindex)
+// and the page copy, passed down so the meta tags and the visible text can't drift; the
+// markup lives in Sections/NotFound.
+import NotFound from "@components/Sections/NotFound/NotFound.astro";
+import siteData from "@config/siteData.json";
+import BaseLayout from "@layouts/BaseLayout.astro";
+
+const title = "Page not found";
+const description =
+  "Sorry, the page you're looking for doesn't exist or has moved. Let's get you back on track.";
 ---
 
-<Base title="Page not found">
-	<div class="not-found">
-		<h1>404</h1>
-		<p>The page you're looking for doesn't exist.</p>
-		<a href="/">Go back home</a>
-	</div>
-</Base>
-
-<style>
-	.not-found {
-		text-align: center;
-		padding: var(--spacing-24) var(--spacing-6);
-	}
-
-	.not-found h1 {
-		font-size: var(--font-size-5xl);
-		margin-bottom: var(--spacing-2);
-		color: var(--color-border);
-	}
-
-	.not-found p {
-		color: var(--color-muted);
-		margin-bottom: var(--spacing-6);
-	}
-
-	.not-found a {
-		color: var(--color-text);
-	}
-</style>
+<BaseLayout title={`${title} — ${siteData.name}`} description={description} noindex={true}>
+  <NotFound title={title} description={description} />
+</BaseLayout>

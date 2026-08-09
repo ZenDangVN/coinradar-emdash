@@ -1,70 +1,39 @@
-import type { APIRoute } from "astro";
-import { getEmDashCollection, getSiteSettings } from "emdash";
+// Dependency-free RSS 2.0 feed for the blog (a feed ships with the blog route; hand-rolled like
+// everything else in <head>, no @astrojs/rss). Server-rendered off the EmDash `posts` collection —
+// the same query behind /blog/ — so the feed and the listing can never drift; absolute URLs resolve
+// against `site`. The escaping + document shape live in @js/rss (pure); this endpoint only supplies
+// the posts and the `site` URL.
+import siteData from "@config/siteData.json";
+import { siteLocale } from "@config/siteSettings.json";
+import { getSortedPosts } from "@js/blogData";
+import { renderRssFeed } from "@js/rss";
+import type { APIContext } from "astro";
 
-import { resolveBlogSiteIdentity } from "../utils/site-identity";
+export async function GET({ site }: APIContext): Promise<Response> {
+  if (!site) {
+    throw new Error("`site` must be set in astro.config.mjs for the RSS feed to resolve URLs.");
+  }
 
-export const GET: APIRoute = async ({ site, url }) => {
-	const siteUrl = site?.toString() || url.origin;
-	const { siteTitle, siteTagline } = resolveBlogSiteIdentity(await getSiteSettings());
+  const { posts } = await getSortedPosts();
+  const xml = renderRssFeed(
+    {
+      title: siteData.name,
+      link: new URL("/blog/", site).href,
+      description: siteData.description,
+      language: siteLocale,
+    },
+    posts.map((post) => ({
+      title: post.data.title,
+      url: new URL(`/blog/${post.id}/`, site).href,
+      description: post.data.description,
+      pubDate: post.data.pubDate,
+    })),
+  );
 
-	const { entries: posts } = await getEmDashCollection("posts", {
-		orderBy: { published_at: "desc" },
-		limit: 20,
-	});
-
-	const items = posts
-		.map((post) => {
-			if (!post.data.publishedAt) return null;
-			const pubDate = post.data.publishedAt.toUTCString();
-
-			const postUrl = `${siteUrl}/posts/${post.id}`;
-			const title = escapeXml(post.data.title || "Untitled");
-			const description = escapeXml(post.data.excerpt || "");
-
-			return `    <item>
-      <title>${title}</title>
-      <link>${postUrl}</link>
-      <guid isPermaLink="true">${postUrl}</guid>
-      <pubDate>${pubDate}</pubDate>
-      <description>${description}</description>
-    </item>`;
-		})
-		.filter(Boolean)
-		.join("\n");
-
-	const rss = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>${escapeXml(siteTitle)}</title>
-    <description>${escapeXml(siteTagline)}</description>
-    <link>${siteUrl}</link>
-    <atom:link href="${siteUrl}/rss.xml" rel="self" type="application/rss+xml"/>
-    <language>en-us</language>
-    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-${items}
-  </channel>
-</rss>`;
-
-	return new Response(rss, {
-		headers: {
-			"Content-Type": "application/rss+xml; charset=utf-8",
-			"Cache-Control": "public, max-age=3600",
-		},
-	});
-};
-
-const XML_ESCAPE_PATTERNS = [
-	[/&/g, "&amp;"],
-	[/</g, "&lt;"],
-	[/>/g, "&gt;"],
-	[/"/g, "&quot;"],
-	[/'/g, "&apos;"],
-] as const;
-
-function escapeXml(str: string): string {
-	let result = str;
-	for (const [pattern, replacement] of XML_ESCAPE_PATTERNS) {
-		result = result.replace(pattern, replacement);
-	}
-	return result;
+  return new Response(xml, {
+    headers: {
+      "Content-Type": "application/rss+xml; charset=utf-8",
+      "Cache-Control": "public, max-age=3600",
+    },
+  });
 }

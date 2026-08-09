@@ -4,6 +4,9 @@ dist
 uploads
 data.db
 
+# Wrangler local dev state (miniflare D1/KV/R2 sqlite files — always changing while dev runs)
+.wrangler
+
 # Environment / Wrangler secrets
 .env
 .env.*

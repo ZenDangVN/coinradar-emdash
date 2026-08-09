@@ -23,9 +23,35 @@ export interface Post {
   slug: string | null;
   status: string;
   title: string;
-  featured_image?: { id: string; src?: string; alt?: string; width?: number; height?: number };
+  featured_image?: { id: string; src?: string; alt?: string; width?: number; height?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> };
   content?: PortableTextBlock[];
   excerpt?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt: Date | null;
+  bylines?: ContentBylineCredit[];
+  terms?: Record<string, TaxonomyTerm[]>;
+}
+
+export interface Project {
+  id: string;
+  slug: string | null;
+  status: string;
+  title: string;
+  card_title?: string;
+  description?: string;
+  tagline?: string;
+  project_status: string;
+  module_id?: string;
+  sort_order?: number;
+  thumbnail?: { id: string; src?: string; alt?: string; width?: number; height?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> };
+  tech?: unknown;
+  specs?: unknown;
+  features?: unknown;
+  arch_caption?: string;
+  challenge?: unknown;
+  solution?: unknown;
+  content?: PortableTextBlock[];
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
@@ -37,5 +63,6 @@ declare module "emdash" {
   interface EmDashCollections {
     pages: Page;
     posts: Post;
+    projects: Project;
   }
 }

@@ -3,10 +3,16 @@ import react from "@astrojs/react";
 import { d1, r2, sandbox } from "@emdash-cms/cloudflare";
 import { formsPlugin } from "@emdash-cms/plugin-forms";
 import webhookNotifier from "@emdash-cms/plugin-webhook-notifier";
-import { defineConfig, fontProviders } from "astro/config";
+import tailwindcss from "@tailwindcss/vite";
+import { defineConfig, envField } from "astro/config";
 import emdash from "emdash/astro";
 
+// The production domain — feeds canonical URLs, OG tags, JSON-LD, robots.txt, RSS and llms.txt.
+// Set SITE_URL in the build environment before deploying to production.
+const site = process.env.SITE_URL ?? "https://example.com";
+
 export default defineConfig({
+	site,
 	output: "server",
 	adapter: cloudflare(),
 	image: {
@@ -24,21 +30,21 @@ export default defineConfig({
 			marketplace: "https://marketplace.emdashcms.com",
 		}),
 	],
-	fonts: [
-		{
-			provider: fontProviders.google(),
-			name: "Inter",
-			cssVariable: "--font-body",
-			weights: [400, 500, 600, 700],
-			fallbacks: ["sans-serif"],
+	// The contact action's mail keys, declared through `astro:env` so they resolve at REQUEST time
+	// on Cloudflare Workers (secrets exist only in the runtime env, which import.meta.env never sees).
+	env: {
+		schema: {
+			RESEND_API_KEY: envField.string({ context: "server", access: "secret", optional: true }),
+			CONTACT_TO_EMAIL: envField.string({ context: "server", access: "secret", optional: true }),
+			CONTACT_FROM_EMAIL: envField.string({ context: "server", access: "secret", optional: true }),
 		},
-		{
-			provider: fontProviders.google(),
-			name: "JetBrains Mono",
-			cssVariable: "--font-mono",
-			weights: [400, 500],
-			fallbacks: ["monospace"],
+	},
+	vite: {
+		plugins: [tailwindcss()],
+		// Stop inlining short scripts so they don't break under <ClientRouter /> view transitions.
+		build: {
+			assetsInlineLimit: 0,
 		},
-	],
+	},
 	devToolbar: { enabled: false },
 });

@@ -2,20 +2,25 @@
 	"$schema": "https://emdashcms.com/seed.schema.json",
 	"version": "1",
 	"meta": {
-		"name": "Blog Starter",
-		"description": "A blog with posts and pages",
+		"name": "8-BitQuest",
+		"description": "Retro pixel-art dev portfolio with blog and project log",
 		"author": "EmDash"
 	},
 	"settings": {
-		"title": "My Blog",
-		"tagline": "Thoughts on building for the web"
+		"title": "8-BitQuest",
+		"tagline": "Field notes from the code frontier"
 	},
 	"collections": [
 		{
 			"slug": "posts",
 			"label": "Posts",
 			"labelSingular": "Post",
-			"supports": ["drafts", "revisions", "search", "seo"],
+			"supports": [
+				"drafts",
+				"revisions",
+				"search",
+				"seo"
+			],
 			"commentsEnabled": true,
 			"fields": [
 				{
@@ -47,7 +52,11 @@
 			"slug": "pages",
 			"label": "Pages",
 			"labelSingular": "Page",
-			"supports": ["drafts", "revisions", "search"],
+			"supports": [
+				"drafts",
+				"revisions",
+				"search"
+			],
 			"fields": [
 				{
 					"slug": "title",
@@ -63,6 +72,99 @@
 					"searchable": true
 				}
 			]
+		},
+		{
+			"slug": "projects",
+			"label": "Projects",
+			"labelSingular": "Project",
+			"supports": [
+				"drafts",
+				"revisions",
+				"search",
+				"seo"
+			],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "card_title",
+					"label": "Card Title (listing card, falls back to Title)",
+					"type": "string"
+				},
+				{
+					"slug": "description",
+					"label": "Description (card excerpt + SEO)",
+					"type": "text",
+					"searchable": true
+				},
+				{
+					"slug": "tagline",
+					"label": "Tagline (detail hero intro)",
+					"type": "text"
+				},
+				{
+					"slug": "project_status",
+					"label": "Status (complete | in-progress)",
+					"type": "string",
+					"required": true
+				},
+				{
+					"slug": "module_id",
+					"label": "Module ID (e.g. #01_CHAT)",
+					"type": "string"
+				},
+				{
+					"slug": "sort_order",
+					"label": "Sort Order (ascending)",
+					"type": "integer"
+				},
+				{
+					"slug": "thumbnail",
+					"label": "Thumbnail",
+					"type": "image"
+				},
+				{
+					"slug": "tech",
+					"label": "Tech Tags (JSON array of strings)",
+					"type": "json"
+				},
+				{
+					"slug": "specs",
+					"label": "Specs (JSON array of {label, value})",
+					"type": "json"
+				},
+				{
+					"slug": "features",
+					"label": "Features (JSON array of {lead, text})",
+					"type": "json"
+				},
+				{
+					"slug": "arch_caption",
+					"label": "Architecture Caption (e.g. [Packet Switching Engine])",
+					"type": "string"
+				},
+				{
+					"slug": "challenge",
+					"label": "Challenge (JSON {title, body})",
+					"type": "json"
+				},
+				{
+					"slug": "solution",
+					"label": "Solution (JSON {title, body})",
+					"type": "json"
+				},
+				{
+					"slug": "content",
+					"label": "Project Overview",
+					"type": "portableText",
+					"searchable": true
+				}
+			]
 		}
 	],
 	"taxonomies": [
@@ -71,7 +173,9 @@
 			"label": "Categories",
 			"labelSingular": "Category",
 			"hierarchical": true,
-			"collections": ["posts"],
+			"collections": [
+				"posts"
+			],
 			"terms": [
 				{
 					"slug": "development",
@@ -92,7 +196,9 @@
 			"label": "Tags",
 			"labelSingular": "Tag",
 			"hierarchical": false,
-			"collections": ["posts"],
+			"collections": [
+				"posts"
+			],
 			"terms": [
 				{
 					"slug": "webdev",
@@ -133,18 +239,23 @@
 			"items": [
 				{
 					"type": "custom",
-					"label": "Home",
-					"url": "/"
-				},
-				{
-					"type": "custom",
 					"label": "About",
-					"url": "/pages/about"
+					"url": "/about/"
 				},
 				{
 					"type": "custom",
-					"label": "Posts",
-					"url": "/posts"
+					"label": "Projects",
+					"url": "/projects/"
+				},
+				{
+					"type": "custom",
+					"label": "Blog",
+					"url": "/blog/"
+				},
+				{
+					"type": "custom",
+					"label": "Contact",
+					"url": "/contact/"
 				}
 			]
 		}
@@ -221,7 +332,12 @@
 			"slug": "newsletter-signup",
 			"title": "Newsletter Signup",
 			"description": "A call-to-action block for newsletter subscriptions",
-			"keywords": ["newsletter", "subscribe", "email", "cta"],
+			"keywords": [
+				"newsletter",
+				"subscribe",
+				"email",
+				"cta"
+			],
 			"source": "theme",
 			"content": [
 				{
@@ -254,7 +370,11 @@
 			"slug": "about-author",
 			"title": "About the Author",
 			"description": "Brief author bio for use in posts or pages",
-			"keywords": ["author", "bio", "about"],
+			"keywords": [
+				"author",
+				"bio",
+				"about"
+			],
 			"source": "theme",
 			"content": [
 				{
@@ -273,6 +393,496 @@
 		}
 	],
 	"content": {
+		"projects": [
+			{
+				"id": "project-realtime-chat",
+				"slug": "realtime-chat",
+				"status": "published",
+				"data": {
+					"title": "Real-Time Chat Application",
+					"card_title": "Building a Real-Time Chat App",
+					"description": "Implemented WebSockets, Redis pub/sub, and automated testing for a production retro chat platform.",
+					"tagline": "A high-frequency websocket terminal built to emulate instant packet switching. Powering sub-10ms packet broadcasts across memory clusters with zero lost frames.",
+					"module_id": "#01_CHAT",
+					"sort_order": 1,
+					"thumbnail": {
+						"$media": {
+							"url": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200&h=800&fit=crop",
+							"alt": "Code on a monitor in a dark room",
+							"filename": "project-realtime-chat.jpg"
+						}
+					},
+					"tech": [
+						"React",
+						"Node.js",
+						"WebSockets",
+						"Redis"
+					],
+					"specs": [
+						{
+							"label": "Frontend",
+							"value": "React"
+						},
+						{
+							"label": "Backend",
+							"value": "Node.js"
+						},
+						{
+							"label": "Transport",
+							"value": "WebSocket"
+						},
+						{
+							"label": "Routing",
+							"value": "Redis Pub/Sub"
+						}
+					],
+					"features": [
+						{
+							"lead": "Bi-directional pipelines",
+							"text": "Node.js WS modules serving instant client-to-server frames."
+						},
+						{
+							"lead": "Redis backplane",
+							"text": "Event broadcasting across memory segments to sustain system integrity."
+						},
+						{
+							"lead": "Full test suite",
+							"text": "Automated mock loops asserting system state over high stress simulations."
+						}
+					],
+					"arch_caption": "[Packet Switching Engine]",
+					"challenge": {
+						"title": "Threat: Buffer Congestion",
+						"body": "High-frequency clients broadcasting at excessive speeds can congest socket descriptors, leading to system memory blockages or socket drops."
+					},
+					"solution": {
+						"title": "Remedy: Redis Backplane",
+						"body": "Decoupled system connections via a pub/sub layer. Messages queue and route through asynchronous Redis buffers, maintaining low memory footprints."
+					},
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "The ultimate objective was building an instantly reactive networking terminal. Combining React custom hooks with Node.js WebSocket protocol handlers, we bypass HTTP overhead for true duplex datastreams. Redis pub/sub operates as the backplane event router, letting us scale to thousands of concurrent guest nodes seamlessly.",
+									"_key": "k1"
+								}
+							],
+							"_key": "k0"
+						}
+					],
+					"project_status": "complete"
+				}
+			},
+			{
+				"id": "project-monolith-to-aws",
+				"slug": "monolith-to-aws",
+				"status": "published",
+				"data": {
+					"title": "Monolith to Microservices",
+					"card_title": "Migrated a Monolith to AWS",
+					"description": "Designed service boundaries, API gateways, and automated CI/CD pipelines for a distributed legacy system.",
+					"tagline": "A staged decomposition of a legacy monolith into fault-isolated services, orchestrated across AWS with a zero-downtime cutover.",
+					"module_id": "#02_AWS",
+					"sort_order": 2,
+					"thumbnail": {
+						"$media": {
+							"url": "https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=1200&h=800&fit=crop",
+							"alt": "Code on a screen with a dark theme",
+							"filename": "project-monolith-to-aws.jpg"
+						}
+					},
+					"tech": [
+						"AWS",
+						"Docker",
+						"CI/CD",
+						"Node.js"
+					],
+					"specs": [
+						{
+							"label": "Platform",
+							"value": "AWS ECS"
+						},
+						{
+							"label": "Containers",
+							"value": "Docker"
+						},
+						{
+							"label": "Pipeline",
+							"value": "GitHub Actions"
+						},
+						{
+							"label": "Runtime",
+							"value": "Node.js"
+						}
+					],
+					"features": [
+						{
+							"lead": "Service boundaries",
+							"text": "Domain-driven splits carved along transaction seams to isolate failure."
+						},
+						{
+							"lead": "Gateway routing",
+							"text": "A single API gateway fronts the mesh, handling auth and rate limits."
+						},
+						{
+							"lead": "Blue-green deploys",
+							"text": "Automated pipelines shift traffic between fleets with instant rollback."
+						}
+					],
+					"arch_caption": "[Service Mesh]",
+					"challenge": {
+						"title": "Threat: Distributed State",
+						"body": "Splitting a shared database across services risked inconsistent reads and orphaned writes during the migration window."
+					},
+					"solution": {
+						"title": "Remedy: Event Sourcing",
+						"body": "An append-only event log became the source of truth; services rebuild local views asynchronously, tolerating partial outages."
+					},
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "The legacy monolith had grown into a single deploy unit no one dared touch. We mapped its transaction boundaries, extracted the hottest paths into independent Docker services, and fronted them with an API gateway. CI/CD pipelines now ship each service on its own cadence, cutting deploy risk to near zero.",
+									"_key": "k1"
+								}
+							],
+							"_key": "k0"
+						}
+					],
+					"project_status": "complete"
+				}
+			},
+			{
+				"id": "project-open-source-cli",
+				"slug": "open-source-cli",
+				"status": "published",
+				"data": {
+					"title": "Open Source CLI Dev Tool",
+					"description": "A Node.js CLI that automates dev workflows and ships with zero-config support for TypeScript and Docker.",
+					"tagline": "A zero-config command-line companion that scaffolds, lints, and ships projects — installed by thousands, starred 2k+ times.",
+					"module_id": "#03_CLI",
+					"sort_order": 3,
+					"thumbnail": {
+						"$media": {
+							"url": "https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=1200&h=800&fit=crop",
+							"alt": "A terminal window with green text on a dark background",
+							"filename": "project-open-source-cli.jpg"
+						}
+					},
+					"tech": [
+						"TypeScript",
+						"Node.js",
+						"CLI",
+						"Docker"
+					],
+					"specs": [
+						{
+							"label": "Language",
+							"value": "TypeScript"
+						},
+						{
+							"label": "Runtime",
+							"value": "Node.js"
+						},
+						{
+							"label": "Packaging",
+							"value": "npm"
+						},
+						{
+							"label": "Targets",
+							"value": "Docker"
+						}
+					],
+					"features": [
+						{
+							"lead": "Zero-config core",
+							"text": "Sensible defaults detect the project type and wire the toolchain automatically."
+						},
+						{
+							"lead": "Plugin API",
+							"text": "A typed hook system lets teams extend commands without forking."
+						},
+						{
+							"lead": "Docker targets",
+							"text": "One command builds reproducible images from a detected stack."
+						}
+					],
+					"arch_caption": "[Command Router]",
+					"challenge": {
+						"title": "Threat: Config Sprawl",
+						"body": "Every project wanted a slightly different setup, and flags multiplied until the help output was unreadable."
+					},
+					"solution": {
+						"title": "Remedy: Convention Engine",
+						"body": "A detection layer infers intent from the repo, collapsing dozens of flags into a handful of well-named presets."
+					},
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Built to erase the boilerplate that starts every project, this Node.js CLI reads a repository, infers its stack, and wires linting, testing, and Docker packaging with no configuration file. A typed plugin API keeps it extensible; the community has shipped adapters for a dozen frameworks and pushed the tool past two thousand GitHub stars.",
+									"_key": "k1"
+								}
+							],
+							"_key": "k0"
+						}
+					],
+					"project_status": "complete"
+				}
+			},
+			{
+				"id": "project-observability-dashboard",
+				"slug": "observability-dashboard",
+				"status": "published",
+				"data": {
+					"title": "Web Observability Dashboard",
+					"description": "Integrating Prometheus metrics, Grafana visualization, and custom alerting rules for high-concurrency API performance tracking.",
+					"tagline": "A live control room for a high-traffic API — streaming metrics, traces, and alert state onto one pixel-perfect grid.",
+					"module_id": "#04_OBS",
+					"sort_order": 4,
+					"thumbnail": {
+						"$media": {
+							"url": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=800&fit=crop",
+							"alt": "Analytics dashboards with charts on a laptop screen",
+							"filename": "project-observability-dashboard.jpg"
+						}
+					},
+					"tech": [
+						"React",
+						"Prometheus",
+						"Grafana",
+						"Go"
+					],
+					"specs": [
+						{
+							"label": "Frontend",
+							"value": "React"
+						},
+						{
+							"label": "Metrics",
+							"value": "Prometheus"
+						},
+						{
+							"label": "Dashboards",
+							"value": "Grafana"
+						},
+						{
+							"label": "Collector",
+							"value": "Go"
+						}
+					],
+					"features": [
+						{
+							"lead": "Live metrics",
+							"text": "Prometheus scrapes stream into a React grid refreshed on a sub-second tick."
+						},
+						{
+							"lead": "Custom alerts",
+							"text": "A rule builder compiles thresholds into Prometheus alerting expressions."
+						},
+						{
+							"lead": "Trace drill-down",
+							"text": "Click any spike to open the correlated request trace."
+						}
+					],
+					"arch_caption": "[Metrics Pipeline]",
+					"challenge": {
+						"title": "Threat: Cardinality Explosion",
+						"body": "High-dimensional labels ballooned the metric series count until dashboard queries timed out."
+					},
+					"solution": {
+						"title": "Remedy: Label Budgets",
+						"body": "A recording-rule layer pre-aggregates hot queries and caps label cardinality at ingest."
+					},
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "This dashboard is the single pane of glass for a high-concurrency API. A Go collector fans out Prometheus scrapes, a rule engine turns plain-language thresholds into alerting expressions, and a React front end renders the whole system state on a retro grid. Trace drill-down ties every latency spike back to the request that caused it. (In active development.)",
+									"_key": "k1"
+								}
+							],
+							"_key": "k0"
+						}
+					],
+					"project_status": "in-progress"
+				}
+			},
+			{
+				"id": "project-headless-cms",
+				"slug": "headless-cms",
+				"status": "published",
+				"data": {
+					"title": "Headless CMS with Next.js",
+					"description": "Built a lightning fast portfolio blog platform using server components, incremental static generation, and edge caching.",
+					"tagline": "A content platform where editors publish to the edge — server components and incremental static generation keep every page instant.",
+					"module_id": "#05_CMS",
+					"sort_order": 5,
+					"thumbnail": {
+						"$media": {
+							"url": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&h=800&fit=crop",
+							"alt": "Laptop and coffee on a wooden table",
+							"filename": "project-headless-cms.jpg"
+						}
+					},
+					"tech": [
+						"Next.js",
+						"Vercel",
+						"GraphQL",
+						"Tailwind"
+					],
+					"specs": [
+						{
+							"label": "Framework",
+							"value": "Next.js"
+						},
+						{
+							"label": "Hosting",
+							"value": "Vercel"
+						},
+						{
+							"label": "Content API",
+							"value": "GraphQL"
+						},
+						{
+							"label": "Styling",
+							"value": "Tailwind"
+						}
+					],
+					"features": [
+						{
+							"lead": "Server components",
+							"text": "Content renders on the server and streams to the client with no hydration cost."
+						},
+						{
+							"lead": "Incremental builds",
+							"text": "Only changed pages rebuild on publish, keeping deploys seconds long."
+						},
+						{
+							"lead": "Edge caching",
+							"text": "Rendered pages sit at the edge, served from the region nearest each reader."
+						}
+					],
+					"arch_caption": "[Render Pipeline]",
+					"challenge": {
+						"title": "Threat: Stale Content",
+						"body": "Aggressive edge caching served yesterday's copy long after editors hit publish."
+					},
+					"solution": {
+						"title": "Remedy: Tag Invalidation",
+						"body": "Publishes emit cache tags that purge exactly the affected routes at the edge, and nothing more."
+					},
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Editors needed a fast, headless workflow without babysitting deploys. Content flows through a GraphQL API into Next.js server components; incremental static generation rebuilds only what changed, and tag-based invalidation purges the edge the instant a page is published. The result is a portfolio-grade blog that loads instantly and updates in seconds.",
+									"_key": "k1"
+								}
+							],
+							"_key": "k0"
+						}
+					],
+					"project_status": "complete"
+				}
+			},
+			{
+				"id": "project-database-index-optimization",
+				"slug": "database-index-optimization",
+				"status": "published",
+				"data": {
+					"title": "Database Index Optimization",
+					"description": "Analyzing nested query plans, rebuilding indexes, and reducing latency for write-heavy high-traffic database engines.",
+					"tagline": "A deep tuning pass on a write-heavy engine — reading query plans by hand and rebuilding indexes until the tail latency collapsed.",
+					"module_id": "#06_DB",
+					"sort_order": 6,
+					"thumbnail": {
+						"$media": {
+							"url": "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=1200&h=800&fit=crop",
+							"alt": "Server racks with cables in a data center",
+							"filename": "project-database-index-optimization.jpg"
+						}
+					},
+					"tech": [
+						"PostgreSQL",
+						"Redis",
+						"SQL",
+						"Database"
+					],
+					"specs": [
+						{
+							"label": "Engine",
+							"value": "PostgreSQL"
+						},
+						{
+							"label": "Cache",
+							"value": "Redis"
+						},
+						{
+							"label": "Language",
+							"value": "SQL"
+						},
+						{
+							"label": "Workload",
+							"value": "Write-Heavy"
+						}
+					],
+					"features": [
+						{
+							"lead": "Plan analysis",
+							"text": "EXPLAIN output is parsed to flag sequential scans on hot paths."
+						},
+						{
+							"lead": "Index rebuilds",
+							"text": "Partial and covering indexes replace bloated B-trees on the busiest tables."
+						},
+						{
+							"lead": "Cache offload",
+							"text": "Redis absorbs read spikes that would otherwise thrash the write path."
+						}
+					],
+					"arch_caption": "[Query Planner]",
+					"challenge": {
+						"title": "Threat: Write Amplification",
+						"body": "Every new index sped reads but taxed the write path, and this table was overwhelmingly write-heavy."
+					},
+					"solution": {
+						"title": "Remedy: Selective Indexing",
+						"body": "Partial indexes cover only the queried subset, cutting write overhead while keeping reads fast. (Tuning ongoing.)"
+					},
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "A write-heavy Postgres engine was missing its latency budget under load. We read the query plans by hand, replaced bloated indexes with partial and covering ones, and moved read spikes onto a Redis cache so they no longer competed with writes. Tail latency is already down sharply, with further tuning in progress.",
+									"_key": "k1"
+								}
+							],
+							"_key": "k0"
+						}
+					],
+					"project_status": "in-progress"
+				}
+			}
+		],
 		"pages": [
 			{
 				"id": "about",
@@ -409,8 +1019,12 @@
 					}
 				],
 				"taxonomies": {
-					"category": ["development"],
-					"tag": ["opinion"]
+					"category": [
+						"development"
+					],
+					"tag": [
+						"opinion"
+					]
 				}
 			},
 			{
@@ -496,8 +1110,13 @@
 					}
 				],
 				"taxonomies": {
-					"category": ["development"],
-					"tag": ["webdev", "opinion"]
+					"category": [
+						"development"
+					],
+					"tag": [
+						"webdev",
+						"opinion"
+					]
 				}
 			},
 			{
@@ -578,8 +1197,12 @@
 					]
 				},
 				"taxonomies": {
-					"category": ["notes"],
-					"tag": ["opinion"]
+					"category": [
+						"notes"
+					],
+					"tag": [
+						"opinion"
+					]
 				}
 			},
 			{
@@ -660,8 +1283,12 @@
 					]
 				},
 				"taxonomies": {
-					"category": ["development"],
-					"tag": ["tools"]
+					"category": [
+						"development"
+					],
+					"tag": [
+						"tools"
+					]
 				}
 			},
 			{
@@ -742,8 +1369,12 @@
 					]
 				},
 				"taxonomies": {
-					"category": ["design"],
-					"tag": ["creativity"]
+					"category": [
+						"design"
+					],
+					"tag": [
+						"creativity"
+					]
 				}
 			},
 			{
@@ -824,8 +1455,12 @@
 					]
 				},
 				"taxonomies": {
-					"category": ["development"],
-					"tag": ["creativity"]
+					"category": [
+						"development"
+					],
+					"tag": [
+						"creativity"
+					]
 				}
 			},
 			{
@@ -906,8 +1541,12 @@
 					]
 				},
 				"taxonomies": {
-					"category": ["notes"],
-					"tag": ["opinion"]
+					"category": [
+						"notes"
+					],
+					"tag": [
+						"opinion"
+					]
 				}
 			},
 			{
