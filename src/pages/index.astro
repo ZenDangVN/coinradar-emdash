@@ -9,11 +9,13 @@ import Hero from "@components/Sections/Home/Hero.astro";
 import LatestPosts from "@components/Sections/Home/LatestPosts.astro";
 import Stats from "@components/Sections/Home/Stats.astro";
 import TechStack from "@components/Sections/Home/TechStack.astro";
-import siteData from "@config/siteData.json";
+import { getSiteIdentity } from "@js/siteIdentity";
 import BaseLayout from "@layouts/BaseLayout.astro";
+
+const site = await getSiteIdentity();
 ---
 
-<BaseLayout title={siteData.title} description={siteData.description}>
+<BaseLayout title={site.title} description={site.description}>
   <div class="site-container flex flex-col gap-10 py-8 md:gap-12 md:py-12">
     <Hero />
     <Stats />

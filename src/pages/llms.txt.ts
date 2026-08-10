@@ -1,4 +1,4 @@
-import siteData from "@config/siteData.json";
+import { getSiteIdentity } from "@js/siteIdentity";
 import type { APIRoute } from "astro";
 
 /**
@@ -10,8 +10,8 @@ import type { APIRoute } from "astro";
  * the site grows, or this drifts. Currently the main pages, the blog index, and the RSS feed. It's
  * an editorial content map for AI crawlers, not a ranking factor.
  */
-export const GET: APIRoute = ({ site }) => {
-  const { name, description } = siteData;
+export const GET: APIRoute = async ({ site }) => {
+  const { name, description } = await getSiteIdentity();
   const base = site ?? new URL("https://example.com/");
 
   const body = [

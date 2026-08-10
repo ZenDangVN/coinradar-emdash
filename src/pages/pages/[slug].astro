@@ -2,7 +2,7 @@
 // CMS page detail (/pages/<slug>/). Server-rendered off the EmDash `pages` collection (D1) so
 // editor-created pages get a route without touching code. Renders the Portable Text content in a
 // centred reading column styled like the blog article prose (.blog-prose), inside the theme shell.
-import siteData from "@config/siteData.json";
+import { getSiteIdentity } from "@js/siteIdentity";
 import { portableTextToPlain } from "@js/blogData";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import { getEmDashEntry } from "emdash";
@@ -13,13 +13,15 @@ if (!slug) return Astro.redirect("/404");
 
 const { entry: page, cacheHint } = await getEmDashEntry("pages", slug);
 if (!page) return Astro.redirect("/404");
+const site = await getSiteIdentity();
+
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
 
 // meta description: the first ~160 chars of the body (pages have no excerpt field)
 const description = portableTextToPlain(page.data.content).slice(0, 160);
 ---
 
-<BaseLayout title={`${page.data.title} — ${siteData.name}`} description={description}>
+<BaseLayout title={`${page.data.title} — ${site.name}`} description={description}>
   <div class="site-container py-8 md:py-12">
     <article class="mx-auto flex max-w-[800px] flex-col gap-8">
       <h1 class="h1 text-foreground text-balance" {...page.edit.title}>{page.data.title}</h1>

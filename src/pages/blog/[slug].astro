@@ -12,11 +12,14 @@ import { getPost, getSortedPosts, portableTextToPlain } from "@js/blogData";
 import { getAdjacentPosts, getRelatedPosts } from "@js/postCards";
 import { readingTime } from "@js/readingTime";
 import { getArticleSchema, getBreadcrumbSchema, organizationId } from "@js/schema";
+import { getSiteIdentity } from "@js/siteIdentity";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import { PortableText } from "emdash/ui";
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/404");
+
+const site = await getSiteIdentity();
 
 const [{ post: entry, cacheHint }, { posts }] = await Promise.all([
   getPost(slug),
@@ -65,7 +68,7 @@ const breadcrumbSchema = getBreadcrumbSchema([
 ---
 
 <BaseLayout
-  title={`${data.title} — ${siteData.name}`}
+  title={`${data.title} — ${site.name}`}
   description={data.description}
   image={data.heroImage}
   schema={[articleSchema, breadcrumbSchema]}

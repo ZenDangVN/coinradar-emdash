@@ -5,10 +5,12 @@
 // pages. This is the page the header nav's BLOG link points at.
 import BlogHero from "@components/Sections/Blog/BlogHero.astro";
 import CardGrid from "@components/Sections/Global/CardGrid.astro";
-import siteData from "@config/siteData.json";
+import { getSiteIdentity } from "@js/siteIdentity";
 import { getSortedPosts } from "@js/blogData";
 import { toPostCard } from "@js/postCards";
 import BaseLayout from "@layouts/BaseLayout.astro";
+
+const site = await getSiteIdentity();
 
 const { posts, cacheHint } = await getSortedPosts();
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
@@ -16,7 +18,7 @@ const cards = posts.map(toPostCard);
 ---
 
 <BaseLayout
-  title={`Latest Posts — ${siteData.name}`}
+  title={`Latest Posts — ${site.name}`}
   description="Dev Dispatches — field notes from the code frontier: web operations, vintage architectures, and unconventional full-stack builds, cataloged as retro archive modules."
 >
   <div class="site-container flex flex-col gap-10 py-8 md:gap-12 md:py-12">

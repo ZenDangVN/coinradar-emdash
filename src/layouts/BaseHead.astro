@@ -10,6 +10,7 @@ import pressStart2p from "@fontsource/press-start-2p/files/press-start-2p-latin-
 import spaceMono from "@fontsource/space-mono/files/space-mono-latin-400-normal.woff2";
 import type { ImageSource } from "@js/images";
 import { getSiteSchema, type SeoProps, serializeJsonLd } from "@js/schema";
+import { getSiteIdentity } from "@js/siteIdentity";
 import { ClientRouter } from "astro:transitions";
 
 interface Props extends SeoProps {
@@ -20,6 +21,9 @@ interface Props extends SeoProps {
 }
 
 const { title, description, image, noindex = false, schema, article } = Astro.props as Props;
+
+// site identity: EmDash settings first, static siteData as fallback (see @js/siteIdentity)
+const site = await getSiteIdentity();
 
 // resolve canonical + social image to absolute URLs (Astro.site is set in astro.config.mjs)
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -35,9 +39,9 @@ const ogLocale = siteLocale.replace("-", "_");
 // Structured data: a site-level graph (Organization + WebSite) on every page, plus any
 // page-specific nodes (Article, BreadcrumbList) passed via `schema`. See @js/schema.
 const siteNodes = getSiteSchema({
-  name: siteData.name,
+  name: site.name,
   url: canonicalURL.href,
-  description: siteData.description,
+  description: site.description,
   inLanguage: siteLocale,
   // ponytail: placeholder logo = the default OG image; swap for a real brand logo before deploy.
   logo: new URL(siteData.defaultImage.src, canonicalURL).href,
@@ -62,7 +66,7 @@ const jsonLd = serializeJsonLd([...siteNodes, ...(schema ?? [])]);
 <link
   rel="alternate"
   type="application/rss+xml"
-  title={`${siteData.name} — Blog`}
+  title={`${site.name} — Blog`}
   href="/rss.xml"
 />
 
@@ -77,7 +81,7 @@ const jsonLd = serializeJsonLd([...siteNodes, ...(schema ?? [])]);
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonicalURL} />
-<meta property="og:site_name" content={siteData.name} />
+<meta property="og:site_name" content={site.name} />
 <meta property="og:locale" content={ogLocale} />
 <meta property="og:image" content={socialImage} />
 <meta property="og:image:alt" content={imageAlt} />

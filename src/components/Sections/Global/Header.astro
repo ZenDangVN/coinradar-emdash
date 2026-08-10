@@ -14,16 +14,14 @@ import HeaderNavLinks from "@components/Sections/Global/HeaderNavLinks.astro";
 import { Nav } from "@components/ui/nav";
 import { Sheet } from "@components/ui/sheet";
 import { ThemeToggle } from "@components/ui/theme-toggle";
-import siteData from "@config/siteData.json";
 import heroAvatar from "@images/hero-avatar.jpg";
-import { getSiteSettings } from "emdash";
+import { getSiteIdentity } from "@js/siteIdentity";
 
 const pathname = Astro.url.pathname;
 
 // Brand wordmark: the EmDash site title (editable in the admin UI), falling back to the static
 // siteData config while the CMS has no title set.
-const settings = await getSiteSettings();
-const siteName = settings.title || siteData.name;
+const { name: siteName } = await getSiteIdentity();
 ---
 
 <header

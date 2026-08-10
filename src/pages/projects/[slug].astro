@@ -5,7 +5,7 @@
 // Portable Text overview renders through <PortableText> into ProjectArticle's slot. `toProjectCard`
 // builds the listing links off the SAME slug, so grid links and routes can never drift.
 import ProjectArticle from "@components/Sections/Project/ProjectArticle.astro";
-import siteData from "@config/siteData.json";
+import { getSiteIdentity } from "@js/siteIdentity";
 import { getProject } from "@js/projectData";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import { PortableText } from "emdash/ui";
@@ -15,11 +15,13 @@ if (!slug) return Astro.redirect("/404");
 
 const { project: entry, cacheHint } = await getProject(slug);
 if (!entry) return Astro.redirect("/404");
+const site = await getSiteIdentity();
+
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
 ---
 
 <BaseLayout
-  title={`${entry.data.title} — ${siteData.name}`}
+  title={`${entry.data.title} — ${site.name}`}
   description={entry.data.description}
   image={entry.data.thumbnail}
 >

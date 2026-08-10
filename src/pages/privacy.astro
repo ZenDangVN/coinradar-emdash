@@ -3,12 +3,14 @@
 // @config/legalData and renders through the shared Sections/Legal/LegalArticle.
 import LegalArticle from "@components/Sections/Legal/LegalArticle.astro";
 import legalData from "@config/legalData.json";
-import siteData from "@config/siteData.json";
+import { getSiteIdentity } from "@js/siteIdentity";
 import BaseLayout from "@layouts/BaseLayout.astro";
 
 const page = legalData.privacy;
+
+const site = await getSiteIdentity();
 ---
 
-<BaseLayout title={`${page.title} — ${siteData.name}`} description={page.description}>
+<BaseLayout title={`${page.title} — ${site.name}`} description={page.description}>
   <LegalArticle page={page} />
 </BaseLayout>

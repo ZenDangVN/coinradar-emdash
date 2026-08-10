@@ -11,7 +11,7 @@
 // colours are presentational and pair by order — keep this list aligned if you add/remove a stat.
 import Scoreboard from "@components/Sections/Global/Scoreboard.astro";
 import portfolioData from "@config/portfolioData.json";
-import siteData from "@config/siteData.json";
+import { getSiteIdentity } from "@js/siteIdentity";
 
 const colors = [
   "text-success-800 dark:text-success",
@@ -22,8 +22,10 @@ const stats = portfolioData.stats.home.map((text, i) => ({
   text,
   color: colors[i] ?? "text-info",
 }));
+
+const { name: siteName } = await getSiteIdentity();
 ---
 
-<section aria-label={`${siteData.name} by the numbers`}>
+<section aria-label={`${siteName} by the numbers`}>
   <Scoreboard stats={stats} class="bg-muted gap-3 px-5 py-4 text-sm sm:gap-4 sm:text-base" />
 </section>

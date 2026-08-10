@@ -3,14 +3,16 @@
 // and the page copy, passed down so the meta tags and the visible text can't drift; the
 // markup lives in Sections/NotFound.
 import NotFound from "@components/Sections/NotFound/NotFound.astro";
-import siteData from "@config/siteData.json";
+import { getSiteIdentity } from "@js/siteIdentity";
 import BaseLayout from "@layouts/BaseLayout.astro";
 
 const title = "Page not found";
 const description =
   "Sorry, the page you're looking for doesn't exist or has moved. Let's get you back on track.";
+
+const site = await getSiteIdentity();
 ---
 
-<BaseLayout title={`${title} — ${siteData.name}`} description={description} noindex={true}>
+<BaseLayout title={`${title} — ${site.name}`} description={description} noindex={true}>
   <NotFound title={title} description={description} />
 </BaseLayout>
