@@ -11,6 +11,7 @@
  */
 import siteData from "@config/siteData.json";
 import { buildEmail, contactSchema, spamReason } from "@js/contact";
+import { sendContactEmailViaCloudflare } from "@js/cloudflareEmail";
 import { sendContactEmail } from "@js/resend";
 import { ActionError, defineAction } from "astro:actions";
 // astro:env, not import.meta.env: on Cloudflare Workers secrets live only in the runtime env,
@@ -21,29 +22,65 @@ export const server = {
   contact: defineAction({
     accept: "form",
     input: contactSchema,
-    handler: async (input) => {
+    handler: async (input, context) => {
       // 1. Spam gates (honeypot + time). Server clock — never the visitor's device.
       const reason = spamReason(input);
       if (reason) throw new ActionError({ code: "BAD_REQUEST", message: reason });
 
-      // 2. Mail keys — checked at REQUEST time, so a missing key never breaks the build.
-      const apiKey = RESEND_API_KEY;
       const to = CONTACT_TO_EMAIL;
-      if (!apiKey || !to) {
-        // The visitor gets the same generic message as any other send failure — naming the env vars
-        // to the public tells an attacker what the deployment is missing and reads as a broken site.
-        // The operator gets the actionable sentence in the Worker log, same split as the send failure
-        // below.
-        const missing = [!apiKey && "RESEND_API_KEY", !to && "CONTACT_TO_EMAIL"].filter(Boolean);
+      if (!to) {
+        console.error("[contact] Destination email not configured — set CONTACT_TO_EMAIL (see .env.example).");
+        throw new ActionError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Your message could not be sent. Please email me directly.",
+        });
+      }
+
+      // Check if Cloudflare's SEND_EMAIL binding is available in locals
+      const sendEmailBinding = (context.locals as any)?.runtime?.env?.SEND_EMAIL;
+
+      if (sendEmailBinding) {
+        // Cloudflare Email Routing Workers API
+        if (!CONTACT_FROM_EMAIL) {
+          console.error(
+            "[contact] Cloudflare SEND_EMAIL binding found, but CONTACT_FROM_EMAIL is not set. " +
+              "Cloudflare requires a verified sender domain email."
+          );
+          throw new ActionError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Your message could not be sent. Please email me directly.",
+          });
+        }
+        
+        const result = await sendContactEmailViaCloudflare(
+          buildEmail(input, siteData.name),
+          { to, from: CONTACT_FROM_EMAIL },
+          sendEmailBinding
+        );
+
+        if (!result.ok) {
+          console.error("[contact] Cloudflare email send failed:", result.reason);
+          throw new ActionError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Your message could not be sent. Please email me directly.",
+          });
+        }
+
+        return { ok: true as const };
+      }
+
+      // 2. Fallback to Resend API
+      const apiKey = RESEND_API_KEY;
+      if (!apiKey) {
         console.error(
-          `[contact] Not configured — set ${missing.join(" and ")} (see .env.example). ` +
-            `On Cloudflare: pnpm wrangler secret put <NAME>.`,
+          "[contact] Cloudflare SEND_EMAIL binding not found, and RESEND_API_KEY is not configured (see .env.example)."
         );
         throw new ActionError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Your message could not be sent. Please email me directly.",
         });
       }
+      
       // Defaults to Resend's shared sender, which only delivers to the account owner's address.
       // Verify your own domain in Resend and set CONTACT_FROM_EMAIL to send anywhere.
       const from = CONTACT_FROM_EMAIL ?? "onboarding@resend.dev";
@@ -52,8 +89,8 @@ export const server = {
       const result = await sendContactEmail(buildEmail(input, siteData.name), { apiKey, to, from });
       if (!result.ok) {
         // Log the provider's real answer (it can name the account); never show it to the visitor.
-        const context = result.reason === "provider" ? `provider ${result.status}` : result.reason;
-        console.error(`[contact] Resend send failed (${context}):`, result.detail);
+        const contextMsg = result.reason === "provider" ? `provider ${result.status}` : result.reason;
+        console.error(`[contact] Resend send failed (${contextMsg}):`, result.detail);
         throw new ActionError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Your message could not be sent. Please email me directly.",

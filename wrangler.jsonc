@@ -22,6 +22,11 @@
 			"id": "3bfed446cc2448aca436181ccc429305"
 		}
 	],
+	"send_email": [
+		{
+			"name": "SEND_EMAIL"
+		}
+	],
 	// Worker Loader for plugin sandboxing
 	"worker_loaders": [
 		{
