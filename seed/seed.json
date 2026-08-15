@@ -2,13 +2,13 @@
 	"$schema": "https://emdashcms.com/seed.schema.json",
 	"version": "1",
 	"meta": {
-		"name": "8-BitQuest",
-		"description": "Retro pixel-art dev portfolio with blog and project log",
-		"author": "EmDash"
+		"name": "CoinRadar",
+		"description": "Cổng Thông Tin & Cảnh Báo Lừa Đảo Crypto",
+		"author": "CoinRadar Security Lab"
 	},
 	"settings": {
-		"title": "8-BitQuest",
-		"tagline": "Field notes from the code frontier"
+		"title": "CoinRadar",
+		"tagline": "Cổng Thông Tin & Cảnh Báo Lừa Đảo Crypto"
 	},
 	"collections": [
 		{
@@ -25,26 +25,57 @@
 			"fields": [
 				{
 					"slug": "title",
-					"label": "Title",
+					"label": "Tiêu Đề",
 					"type": "string",
 					"required": true,
 					"searchable": true
 				},
 				{
 					"slug": "featured_image",
-					"label": "Featured Image",
+					"label": "Ảnh Đại Diện",
 					"type": "image"
 				},
 				{
 					"slug": "content",
-					"label": "Content",
+					"label": "Nội Dung",
 					"type": "portableText",
 					"searchable": true
 				},
 				{
 					"slug": "excerpt",
-					"label": "Excerpt",
+					"label": "Tóm Tắt Ngắn",
 					"type": "text"
+				},
+				{
+					"slug": "risk_level",
+					"label": "Mức Độ Rủi Ro (critical | warning | safe)",
+					"type": "string"
+				},
+				{
+					"slug": "scam_type",
+					"label": "Loại Hình Lừa Đảo (Honeypot | Phishing | Drainer | Rugpull | Fake Airdrop | Ponzi | None)",
+					"type": "string"
+				},
+				{
+					"slug": "chain",
+					"label": "Mạng Lưới Blockchain",
+					"type": "string"
+				},
+				{
+					"slug": "contract_address",
+					"label": "Địa Chỉ Contract / Ví Lừa Đảo",
+					"type": "string",
+					"searchable": true
+				},
+				{
+					"slug": "loss_estimate",
+					"label": "Thiệt Hại Ước Tính (VD: $4.2M)",
+					"type": "string"
+				},
+				{
+					"slug": "is_featured",
+					"label": "Ghim Làm Báo Động Đỏ Tiêu Điểm",
+					"type": "boolean"
 				}
 			]
 		},
@@ -178,16 +209,20 @@
 			],
 			"terms": [
 				{
-					"slug": "development",
-					"label": "Development"
+					"slug": "scam",
+					"label": "Cảnh Báo Lừa Đảo"
 				},
 				{
-					"slug": "design",
-					"label": "Design"
+					"slug": "analysis",
+					"label": "Phân Tích On-Chain"
 				},
 				{
-					"slug": "notes",
-					"label": "Notes"
+					"slug": "security",
+					"label": "Bảo Mật Ví"
+				},
+				{
+					"slug": "news",
+					"label": "Tin Thị Trường"
 				}
 			]
 		},
@@ -201,20 +236,28 @@
 			],
 			"terms": [
 				{
-					"slug": "webdev",
-					"label": "Web Development"
+					"slug": "solana",
+					"label": "Solana"
 				},
 				{
-					"slug": "opinion",
-					"label": "Opinion"
+					"slug": "ethereum",
+					"label": "Ethereum"
 				},
 				{
-					"slug": "tools",
-					"label": "Tools"
+					"slug": "bnb-chain",
+					"label": "BNB Chain"
 				},
 				{
-					"slug": "creativity",
-					"label": "Creativity"
+					"slug": "drainer",
+					"label": "Drainer"
+				},
+				{
+					"slug": "honeypot",
+					"label": "Honeypot"
+				},
+				{
+					"slug": "phishing",
+					"label": "Phishing"
 				}
 			]
 		}
@@ -222,13 +265,13 @@
 	"bylines": [
 		{
 			"id": "byline-editorial",
-			"slug": "emdash-editorial",
-			"displayName": "EmDash Editorial"
+			"slug": "coinradar-lab",
+			"displayName": "CoinRadar Security Lab"
 		},
 		{
 			"id": "byline-guest",
 			"slug": "guest-contributor",
-			"displayName": "Guest Contributor",
+			"displayName": "Chuyên Gia Độc Lập",
 			"isGuest": true
 		}
 	],
@@ -239,23 +282,28 @@
 			"items": [
 				{
 					"type": "custom",
-					"label": "About",
-					"url": "/about/"
+					"label": "Trang Chủ",
+					"url": "/"
 				},
 				{
 					"type": "custom",
-					"label": "Projects",
-					"url": "/projects/"
+					"label": "🚨 Cảnh Báo Scam",
+					"url": "/blog/?category=scam"
 				},
 				{
 					"type": "custom",
-					"label": "Blog",
-					"url": "/blog/"
+					"label": "📊 Phân Tích Coin",
+					"url": "/blog/?category=analysis"
 				},
 				{
 					"type": "custom",
-					"label": "Contact",
-					"url": "/contact/"
+					"label": "🛡️ Bảo Mật Ví",
+					"url": "/blog/?category=security"
+				},
+				{
+					"type": "custom",
+					"label": "⚡ Tin On-Chain",
+					"url": "/blog/?category=news"
 				}
 			]
 		}
@@ -1570,6 +1618,331 @@
 							"_key": "k0"
 						}
 					]
+				}
+			},
+			{
+				"id": "post-draft",
+				"slug": "work-in-progress",
+				"status": "draft",
+				"data": {
+					"title": "Work in Progress",
+					"excerpt": "This post is still being written.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "This is a draft post that won't appear in the public listing.",
+									"_key": "k1"
+								}
+							],
+							"_key": "k0"
+						}
+					]
+				}
+			},
+			{
+				"id": "coinradar-post-1",
+				"slug": "canh-bao-do-novaai-yield-rugpull-4-2-trieu-usd",
+				"status": "published",
+				"data": {
+					"title": "🔴 Cảnh Báo: Dự án \"NovaAI Yield\" Rút Sạch Thanh Khoản (Rugpull $4.2M), Hợp Đồng Chứa Mã Độc Chặn Bán",
+					"excerpt": "Hợp đồng thông minh của NovaAI đã kích hoạt hàm emergencyWithdraw độc quyền để bòn rút toàn bộ 4.2 triệu USD thanh khoản trên Uniswap V3. Nhà đầu tư hiện không thể Swap hay bán lại token.",
+					"risk_level": "critical",
+					"scam_type": "Rugpull",
+					"chain": "Arbitrum One",
+					"contract_address": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+					"loss_estimate": "$4.2M",
+					"is_featured": true,
+					"content": [
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{"_type": "span", "text": "Tóm Tắt Khẩn Cấp", "_key": "h1"}],
+							"_key": "b0"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [{"_type": "span", "text": "Vào lúc 03:42 UTC ngày 15/08/2026, hợp đồng thông minh của dự án NovaAI Yield đã kích hoạt hàm ẩn emergencyWithdraw(). Đây là một back-door được cài cắm từ khi triển khai, cho phép deployer wallet rút toàn bộ thanh khoản khỏi pool mà không cần bất kỳ sự đồng ý nào của người dùng.", "_key": "s0"}],
+							"_key": "b1"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{"_type": "span", "text": "Phân Tích On-Chain", "_key": "h2"}],
+							"_key": "b2"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [{"_type": "span", "text": "Giao dịch drain đã được thực hiện qua 3 bước: (1) Gọi hàm emergencyWithdraw trên contract proxy, (2) Chuyển 100% LP token về ví deployer, (3) Swap toàn bộ sang USDC và bridge về Ethereum mainnet trong vòng 8 phút.", "_key": "s1"}],
+							"_key": "b3"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{"_type": "span", "text": "Dấu Hiệu Cảnh Báo Đã Có Trước Đó", "_key": "h3"}],
+							"_key": "b4"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [{"_type": "span", "text": "Trước khi xảy ra vụ rugpull, đã có nhiều dấu hiệu đáng ngờ: đội ngũ ẩn danh hoàn toàn, không có audit từ bên thứ ba đáng tin cậy, APY cực cao lên đến 8,000%/năm để thu hút LP, và deployer wallet đã thực hiện nhiều giao dịch test nhỏ trong 48 giờ trước.", "_key": "s2"}],
+							"_key": "b5"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{"_type": "span", "text": "Hành Động Khuyến Nghị", "_key": "h4"}],
+							"_key": "b6"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [{"_type": "span", "text": "Nếu bạn đã tương tác với contract này, hãy thu hồi ngay toàn bộ quyền cấp phép (Allowance) trên Revoke.cash và không tiếp tục giao dịch với bất kỳ token nào liên quan đến hệ sinh thái NovaAI.", "_key": "s3"}],
+							"_key": "b7"
+						}
+					]
+				},
+				"bylines": [{"byline": "byline-editorial"}],
+				"taxonomies": {
+					"category": ["scam"],
+					"tag": ["ethereum", "drainer", "honeypot"]
+				}
+			},
+			{
+				"id": "coinradar-post-2",
+				"slug": "canh-bao-bot-telegram-gia-mao-unibot-v3-drainer",
+				"status": "published",
+				"data": {
+					"title": "⚠️ Cẩn Thận Bot Telegram Giả Mạo \"Unibot V3 Free Sniper\": Chiếm Đoạt Private Key Qua OTP Giả",
+					"excerpt": "Kẻ tấn công đang chạy quảng cáo trên X dẫn người dùng vào các nhóm Telegram sao chép giao diện Unibot. Khi người dùng nhập OTP kết nối ví, toàn bộ SOL và SPL Tokens sẽ bị rút sạch chỉ trong 3 giây.",
+					"risk_level": "critical",
+					"scam_type": "Drainer",
+					"chain": "Solana",
+					"contract_address": "FakeUnibot1111111111111111111111111111111111",
+					"loss_estimate": "$890K",
+					"is_featured": false,
+					"content": [
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{"_type": "span", "text": "Cơ Chế Hoạt Động Của Chiêu Thức", "_key": "h1"}],
+							"_key": "b0"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [{"_type": "span", "text": "Kẻ tấn công tạo các nhóm Telegram với tên giống hệt UNIbot Official, dùng bot giả mạo yêu cầu người dùng nhập seed phrase hoặc private key dưới dạng \"OTP xác thực\". Ngay khi người dùng submit, script tự động quét và drain toàn bộ tài sản trong ví.", "_key": "s0"}],
+							"_key": "b1"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{"_type": "span", "text": "Cách Nhận Biết Bot Thật vs Bot Giả", "_key": "h2"}],
+							"_key": "b2"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [{"_type": "span", "text": "Bot thật KHÔNG BAO GIỜ yêu cầu seed phrase, private key, hay bất kỳ OTP nào. Chỉ kết nối ví qua wallet adapter chính thức. Kiểm tra username bot bằng @username chính xác từ trang web chính thức.", "_key": "s1"}],
+							"_key": "b3"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{"_type": "span", "text": "Các Địa Chỉ Ví Nhận Tiền Lừa Đảo Đã Xác Minh", "_key": "h3"}],
+							"_key": "b4"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [{"_type": "span", "text": "Theo dữ liệu on-chain từ Solscan, các ví nhận tiền đã được ghi nhận trong 72 giờ qua với tổng thiệt hại ~890K USD từ hơn 340 ví nạn nhân.", "_key": "s2"}],
+							"_key": "b5"
+						}
+					]
+				},
+				"bylines": [{"byline": "byline-editorial"}],
+				"taxonomies": {
+					"category": ["scam"],
+					"tag": ["solana", "drainer", "phishing"]
+				}
+			},
+			{
+				"id": "coinradar-post-3",
+				"slug": "danh-gia-rui-ro-pepeclone-thanh-khoan-chua-khoa",
+				"status": "published",
+				"data": {
+					"title": "🟡 Đánh Giá Rủi Ro $PEPECLONE: 78% Tổng Cung Nằm Trong 5 Ví Liên Kết, Thanh Khoản Chưa Khóa",
+					"excerpt": "Mặc dù token đang tăng trưởng +350% trong 24h, dữ liệu on-chain cho thấy các ví deployer nắm quyền chi phối thanh khoản và có thể rút LP bất cứ lúc nào. Nhà đầu tư nên thận trọng khi FOMO.",
+					"risk_level": "warning",
+					"scam_type": "Honeypot",
+					"chain": "Ethereum",
+					"contract_address": "0xPEPECLONE1234567890ABCDEF1234567890ABCD",
+					"loss_estimate": "Chưa xác định",
+					"is_featured": false,
+					"content": [
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{"_type": "span", "text": "Phân Tích Phân Bổ Token (Tokenomics)", "_key": "h1"}],
+							"_key": "b0"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [{"_type": "span", "text": "Theo dữ liệu từ Etherscan, 5 ví top holder nắm giữ 78.3% tổng cung $PEPECLONE. Phân tích on-chain cho thấy các ví này có cùng nguồn funding từ một ví deployer duy nhất, được cấp vốn ban đầu từ Tornado Cash.", "_key": "s0"}],
+							"_key": "b1"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{"_type": "span", "text": "Tình Trạng Thanh Khoản Hiện Tại", "_key": "h2"}],
+							"_key": "b2"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [{"_type": "span", "text": "Toàn bộ thanh khoản trên Uniswap V3 (~$240K) chưa được lock qua bất kỳ nền tảng nào (Unicrypt, Team Finance). Đây là rủi ro rugpull tiềm tàng cực kỳ cao.", "_key": "s1"}],
+							"_key": "b3"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{"_type": "span", "text": "Khuyến Cáo Của CoinRadar", "_key": "h3"}],
+							"_key": "b4"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [{"_type": "span", "text": "Chỉ cân nhắc tham gia với số vốn bạn sẵn sàng mất 100%. Đặt stop-loss ngay khi mua vào. Theo dõi chặt chẽ hoạt động của các top holder trên Etherscan Alerts.", "_key": "s2"}],
+							"_key": "b5"
+						}
+					]
+				},
+				"bylines": [{"byline": "byline-editorial"}],
+				"taxonomies": {
+					"category": ["analysis"],
+					"tag": ["ethereum", "honeypot"]
+				}
+			},
+			{
+				"id": "coinradar-post-4",
+				"slug": "huong-dan-revoke-quyen-token-phong-ngua-drainer",
+				"status": "published",
+				"data": {
+					"title": "🟢 Hướng Dẫn Chi Tiết: Cách Revoke (Thu Hồi Quyền Token) Để Phòng Chống Drainer Hack Ví",
+					"excerpt": "Khi tham gia Dapp, Airdrop hoặc Swap, bạn vô tình cấp quyền không giới hạn (Unlimited Allowance). Đây là lỗ hổng số 1 khiến hàng nghìn ví bị bốc hơi. Hướng dẫn chi tiết cách kiểm tra và ngắt kết nối định kỳ.",
+					"risk_level": "safe",
+					"scam_type": "None",
+					"chain": "Tất cả mạng",
+					"contract_address": null,
+					"loss_estimate": null,
+					"is_featured": false,
+					"content": [
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{"_type": "span", "text": "Allowance Là Gì và Tại Sao Nguy Hiểm?", "_key": "h1"}],
+							"_key": "b0"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [{"_type": "span", "text": "Khi bạn approve một Dapp để dùng token của mình, bạn đang ký một lệnh cấp phép (ERC-20 Allowance) cho phép smart contract đó di chuyển token thay bạn. Nếu contract đó bị hack hoặc chính là mã độc, kẻ tấn công có thể drain toàn bộ số token bạn đã approve.", "_key": "s0"}],
+							"_key": "b1"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{"_type": "span", "text": "Hướng Dẫn Revoke Trên Revoke.cash", "_key": "h2"}],
+							"_key": "b2"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [{"_type": "span", "text": "Bước 1: Truy cập revoke.cash và kết nối ví. Bước 2: Chọn mạng lưới (Ethereum, BSC, Solana...). Bước 3: Xem danh sách các approval đang hoạt động. Bước 4: Nhấn Revoke trên từng approval không còn cần thiết. Bước 5: Xác nhận giao dịch và trả phí gas nhỏ.", "_key": "s1"}],
+							"_key": "b3"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{"_type": "span", "text": "Tần Suất Nên Revoke Định Kỳ", "_key": "h3"}],
+							"_key": "b4"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [{"_type": "span", "text": "CoinRadar khuyến nghị revoke toàn bộ approval ít nhất mỗi 30 ngày, ngay sau khi hoàn tất farming một pool hoặc sau khi tham gia bất kỳ airdrop nào. Đây là thói quen vệ sinh ví quan trọng nhất cho người dùng Web3.", "_key": "s2"}],
+							"_key": "b5"
+						}
+					]
+				},
+				"bylines": [{"byline": "byline-editorial"}],
+				"taxonomies": {
+					"category": ["security"],
+					"tag": ["ethereum", "phishing"]
+				}
+			},
+			{
+				"id": "coinradar-post-5",
+				"slug": "phan-tich-tokenomics-base-op-superchain-q3-2026",
+				"status": "published",
+				"data": {
+					"title": "🟢 Phân Tích Chuyên Sâu Tokenomics Base & OP Superchain: Dòng Tiền Thực Tế Đang Chảy Về Đâu?",
+					"excerpt": "Báo cáo tổng hợp doanh thu mạng lưới, hoạt động của nhà phát triển và mức độ phân bổ token cho hệ sinh thái Layer 2 trong Quý 3/2026.",
+					"risk_level": "safe",
+					"scam_type": "None",
+					"chain": "Layer 2 / Optimism",
+					"contract_address": null,
+					"loss_estimate": null,
+					"is_featured": false,
+					"content": [
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{"_type": "span", "text": "Tổng Quan Doanh Thu Mạng Lưới Q3/2026", "_key": "h1"}],
+							"_key": "b0"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [{"_type": "span", "text": "Base (Coinbase L2) ghi nhận doanh thu phí giao dịch đạt $42.3M trong Q3/2026, tăng 180% so với Q2. Optimism Superchain tổng hợp đạt $89M doanh thu, trong đó Base đóng góp 47% nhờ sự bùng nổ của các ứng dụng DeFi và Social.", "_key": "s0"}],
+							"_key": "b1"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{"_type": "span", "text": "Phân Tích Dòng Tiền Smart Money", "_key": "h2"}],
+							"_key": "b2"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [{"_type": "span", "text": "Dữ liệu Nansen cho thấy các ví Smart Money đang tích lũy OP và cbETH trong 30 ngày qua. Đây là tín hiệu tích cực khi Smart Money thường đi trước thị trường 2-4 tuần. Tổng TVL trên Base đã vượt $8.5B, xếp hạng 3 toàn thị trường L2.", "_key": "s1"}],
+							"_key": "b3"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{"_type": "span", "text": "Rủi Ro Cần Theo Dõi", "_key": "h3"}],
+							"_key": "b4"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [{"_type": "span", "text": "Đội ngũ OP Foundation vẫn nắm giữ quyền upgrade contract mà không cần timelock. Đây là rủi ro tập trung hóa cần theo dõi. Lịch unlock token OP trong Q4/2026 cũng có thể tạo áp lực bán.", "_key": "s2"}],
+							"_key": "b5"
+						}
+					]
+				},
+				"bylines": [{"byline": "byline-editorial"}],
+				"taxonomies": {
+					"category": ["analysis"],
+					"tag": ["ethereum"]
 				}
 			}
 		]

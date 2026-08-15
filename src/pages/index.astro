@@ -1,28 +1,73 @@
 ---
-// Home (/). Thin route shell: owns BaseLayout + SEO and composes the Figma home frame (node 5:2)
-// from Sections/Home. One shared `.site-container` wraps every section for a single column width
-// aligned with the header/footer; `gap-*` gives the vertical rhythm (the mock's ~40px section gaps).
-import About from "@components/Sections/Home/About.astro";
-import Contact from "@components/Sections/Home/Contact.astro";
-import FeaturedProjects from "@components/Sections/Home/FeaturedProjects.astro";
-import Hero from "@components/Sections/Home/Hero.astro";
-import LatestPosts from "@components/Sections/Home/LatestPosts.astro";
-import Stats from "@components/Sections/Home/Stats.astro";
-import TechStack from "@components/Sections/Home/TechStack.astro";
-import { getSiteIdentity } from "@js/siteIdentity";
 import BaseLayout from "@layouts/BaseLayout.astro";
+import HeroRadar from "@components/Sections/Home/HeroRadar.astro";
+import FilterBar from "@components/Sections/Home/FilterBar.astro";
+import SidebarRadar from "@components/Sections/Home/SidebarRadar.astro";
+import ContentCard from "@components/Cards/ContentCard.astro";
+import { getSortedPosts, getFeaturedCrisisPost, getRecentThreats } from "@js/blogData";
+import { getSiteIdentity } from "@js/siteIdentity";
+import { formatDate } from "@js/textUtils";
 
 const site = await getSiteIdentity();
+
+// Chạy song song 3 queries để tối ưu latency
+const [postsResult, featuredResult, threatsResult] = await Promise.all([
+  getSortedPosts(),
+  getFeaturedCrisisPost(),
+  getRecentThreats(4),
+]);
+
+const { posts, cacheHint } = postsResult;
+const { post: featuredPost } = featuredResult;
+const { posts: threatPosts } = threatsResult;
+
+Astro.cache.set(cacheHint);
 ---
 
 <BaseLayout title={site.title} description={site.description}>
-  <div class="site-container flex flex-col gap-10 py-8 md:gap-12 md:py-12">
-    <Hero />
-    <Stats />
-    <LatestPosts />
-    <TechStack />
-    <FeaturedProjects />
-    <About />
-    <Contact />
+  <div class="site-container flex flex-col gap-6 py-6 sm:py-8">
+    
+    <!-- Hero Intelligence & Threat Radar -->
+    <HeroRadar featuredPost={featuredPost} />
+
+    <!-- Category Filter Bar -->
+    <FilterBar activeCategory="all" />
+
+    <!-- Main 2-Column Layout -->
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
+      
+      <!-- Feed Articles (8 cols) -->
+      <div class="lg:col-span-8 flex flex-col gap-5">
+        {posts.length === 0 ? (
+          <div class="rounded-2xl border border-white/10 bg-gray-900/50 p-8 text-center text-gray-400">
+            Chưa có bài viết nào được đăng tải.
+          </div>
+        ) : (
+          posts.map((post) => (
+            <ContentCard
+              href={`/blog/${post.id}/`}
+              title={post.data.title}
+              description={post.data.description}
+              badgeLabel={post.data.category}
+              date={formatDate(post.data.pubDate)}
+              authorName={post.data.authorName}
+              tags={post.data.tags}
+              riskLevel={post.data.riskLevel}
+              chain={post.data.chain}
+              contract={post.data.contractAddress}
+              lossEstimate={post.data.lossEstimate}
+              scamType={post.data.scamType}
+            />
+          ))
+        )}
+      </div>
+
+      <!-- Security Sidebar (4 cols) -->
+      <div class="lg:col-span-4">
+        <SidebarRadar threatPosts={threatPosts} />
+      </div>
+
+    </div>
+
   </div>
 </BaseLayout>

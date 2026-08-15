@@ -1,28 +1,93 @@
 ---
-// Blog listing (/blog/). Thin route shell: owns BaseLayout + SEO and composes the Figma
-// "blog-listing-page" frame (node 76:4) — the BlogHero panel + the shared CardGrid, fed from the
-// `blog` collection (newest first, drafts dropped). Same `.site-container` shell/rhythm as the other
-// pages. This is the page the header nav's BLOG link points at.
-import BlogHero from "@components/Sections/Blog/BlogHero.astro";
-import CardGrid from "@components/Sections/Global/CardGrid.astro";
-import { getSiteIdentity } from "@js/siteIdentity";
-import { getSortedPosts } from "@js/blogData";
-import { toPostCard } from "@js/postCards";
 import BaseLayout from "@layouts/BaseLayout.astro";
+import FilterBar from "@components/Sections/Home/FilterBar.astro";
+import SidebarRadar from "@components/Sections/Home/SidebarRadar.astro";
+import ContentCard from "@components/Cards/ContentCard.astro";
+import { getSiteIdentity } from "@js/siteIdentity";
+import { getSortedPosts, getRecentThreats } from "@js/blogData";
+import { formatDate } from "@js/textUtils";
 
 const site = await getSiteIdentity();
-
-const { posts, cacheHint } = await getSortedPosts();
+const [{ posts, cacheHint }, { posts: threatPosts }] = await Promise.all([
+  getSortedPosts(),
+  getRecentThreats(4),
+]);
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
-const cards = posts.map(toPostCard);
+
+// URL Category filter
+const url = new URL(Astro.request.url);
+const categoryParam = url.searchParams.get("category") || "all";
+
+const filteredPosts = posts.filter((post) => {
+  if (categoryParam === "all") return true;
+  const cat = post.data.category.toLowerCase();
+  if (categoryParam === "scam") return cat.includes("scam") || cat.includes("cảnh báo") || cat.includes("lừa đảo") || post.data.riskLevel === "critical";
+  if (categoryParam === "analysis") return cat.includes("phân tích") || cat.includes("on-chain") || cat.includes("tiềm năng") || post.data.riskLevel === "warning";
+  if (categoryParam === "security") return cat.includes("bảo mật") || cat.includes("ví") || cat.includes("cẩm nang") || post.data.riskLevel === "safe";
+  if (categoryParam === "news") return cat.includes("tin") || cat.includes("thị trường");
+  return true;
+});
 ---
 
 <BaseLayout
-  title={`Latest Posts — ${site.name}`}
-  description="Dev Dispatches — field notes from the code frontier: web operations, vintage architectures, and unconventional full-stack builds, cataloged as retro archive modules."
+  title={`Cảnh Báo & Phân Tích On-Chain — ${site.name}`}
+  description="Danh sách cảnh báo lừa đảo, phân tích dữ liệu On-chain và cẩm nang bảo mật ví crypto."
 >
-  <div class="site-container flex flex-col gap-10 py-8 md:gap-12 md:py-12">
-    <BlogHero />
-    <CardGrid headingId="archive-modules-heading" title="Archive Modules" items={cards} />
+  <div class="site-container flex flex-col gap-6 py-8">
+    
+    <!-- Page Header Banner -->
+    <div class="rounded-2xl border border-white/10 bg-gradient-to-r from-gray-900 via-gray-900 to-gray-950 p-6 sm:p-8 shadow-xl">
+      <div class="max-w-2xl">
+        <span class="inline-flex items-center gap-1.5 rounded-md bg-cyan-500/10 border border-cyan-500/30 px-3 py-1 font-mono text-xs font-bold text-cyan-400 uppercase tracking-wider mb-3">
+          RADAR INTELLIGENCE ARCHIVE
+        </span>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
+          Cảnh Báo & Báo Cáo On-Chain
+        </h1>
+        <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+          Tra cứu toàn bộ các vụ bóc phốt scam, cảnh báo mã độc drainer, phân tích tokenomics và cẩm nang bảo vệ tài sản số Web3.
+        </p>
+      </div>
+    </div>
+
+    <!-- Category Filter Bar -->
+    <FilterBar activeCategory={categoryParam} />
+
+    <!-- 2-Column Grid -->
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
+      
+      <!-- Filtered Articles Feed (8 cols) -->
+      <div class="lg:col-span-8 flex flex-col gap-5">
+        {filteredPosts.length === 0 ? (
+          <div class="rounded-2xl border border-white/10 bg-gray-900/50 p-12 text-center text-gray-400">
+            Không tìm thấy bài viết nào trong chuyên mục này.
+          </div>
+        ) : (
+          filteredPosts.map((post) => (
+            <ContentCard
+              href={`/blog/${post.id}/`}
+              title={post.data.title}
+              description={post.data.description}
+              badgeLabel={post.data.category}
+              date={formatDate(post.data.pubDate)}
+              authorName={post.data.authorName}
+              tags={post.data.tags}
+              riskLevel={post.data.riskLevel}
+              chain={post.data.chain}
+              contract={post.data.contractAddress}
+              lossEstimate={post.data.lossEstimate}
+              scamType={post.data.scamType}
+            />
+          ))
+        )}
+      </div>
+
+      <!-- Security Sidebar (4 cols) -->
+      <div class="lg:col-span-4">
+        <SidebarRadar threatPosts={threatPosts} />
+      </div>
+
+    </div>
+
   </div>
 </BaseLayout>

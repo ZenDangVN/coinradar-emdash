@@ -1,81 +1,161 @@
 ---
-// src/components/Cards/ContentCard.astro — content-aware card (see ./README.md).
-//
-// The Figma "Article - Post Card" / "Project Card" (nodes 5:39, 14:41): the shared pixel-card LINK
-// shell (PixelCardLink — hover-lift <a> + ui/pixel-panel surface + thumbnail) with a content BODY: a
-// retro category badge, a Press Start 2P title, a clamped excerpt, optional tag pills (projects), and
-// a "READ →" / "VIEW →" link. Posts and projects share the shell; only the badge tone, the optional
-// tags, and the CTA word differ. The blog "More Quests" cards share the same PixelCardLink shell.
-//
-// Not built on ui/card: that primitive is a <div> with a 1px border, whereas this needs <a>/<article>
-// semantics and the pixel structure. Uses the ui/badge `pixel` variant + the pixel `PixelIcon`
-// (svg/pixel-icons); tokens only, so the light theme flips free.
-import { PixelIcon } from "@components/svg/pixel-icons";
-import { Badge, type BadgeVariant } from "@components/ui/badge";
 import type { ImageSource } from "@js/images";
-
-import PixelCardLink from "./PixelCardLink.astro";
+import type { RiskLevel } from "@js/blogData";
 
 export interface ContentCardProps {
   href: string;
-  image: ImageSource;
-  imageAlt: string;
+  image?: ImageSource;
+  imageAlt?: string;
   badgeLabel: string;
-  /** Category tone from the ui/badge palette. */
-  badgeVariant?: BadgeVariant;
-  /** Colour override for tones with no semantic token (LORE = fixed maroon). */
+  badgeVariant?: "primary" | "secondary" | "success" | "warning" | "danger" | "info";
   badgeClass?: string;
   title: string;
   description: string;
-  /** Project tech tags; omit for posts. */
   tags?: readonly string[];
-  /** Link verb — "Read" for posts, "View" for projects. */
   cta?: string;
+  date?: string;
+  authorName?: string;
+  contract?: string;
+  chain?: string;
+  /** Mức độ rủi ro từ CMS — điều khiển màu sắc card. */
+  riskLevel?: RiskLevel;
+  lossEstimate?: string;
+  scamType?: string;
 }
+
 const {
   href,
   image,
-  imageAlt,
+  imageAlt = "",
   badgeLabel,
   badgeVariant = "primary",
-  badgeClass,
   title,
   description,
-  tags,
-  cta = "Read",
+  tags = [],
+  cta = "Xem chi tiết",
+  date,
+  authorName,
+  contract,
+  chain,
+  riskLevel,
+  lossEstimate,
+  scamType,
 } = Astro.props as ContentCardProps;
+
+// Determine card border tone based on riskLevel from CMS (preferred) or fallback heuristics
+const isScam =
+  riskLevel === "critical" ||
+  badgeLabel.toLowerCase().includes("scam") ||
+  badgeLabel.toLowerCase().includes("cảnh báo") ||
+  badgeVariant === "danger";
+const isCaution =
+  riskLevel === "warning" ||
+  (!isScam && (badgeLabel.toLowerCase().includes("rủi ro") || badgeVariant === "warning"));
+const isSafe =
+  riskLevel === "safe" ||
+  (!isScam && !isCaution &&
+    (badgeLabel.toLowerCase().includes("an toàn") ||
+      badgeLabel.toLowerCase().includes("tiềm năng") ||
+      badgeVariant === "success"));
+
+let borderClass = "border-white/10 hover:border-cyan-500/50";
+let badgeStyle = "bg-cyan-500/10 text-cyan-400 border-cyan-500/30";
+
+if (isScam) {
+  borderClass = "border-red-500/30 hover:border-red-500/60 border-l-4 border-l-red-500";
+  badgeStyle = "bg-red-500/10 text-red-400 border-red-500/30";
+} else if (isCaution) {
+  borderClass = "border-amber-500/30 hover:border-amber-500/60 border-l-4 border-l-amber-500";
+  badgeStyle = "bg-amber-500/10 text-amber-400 border-amber-500/30";
+} else if (isSafe) {
+  borderClass = "border-emerald-500/30 hover:border-emerald-500/60 border-l-4 border-l-emerald-500";
+  badgeStyle = "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+}
 ---
 
-<PixelCardLink href={href} image={image} imageAlt={imageAlt}>
-  <div class="flex flex-1 flex-col gap-3 p-4">
-    <div>
-      <Badge pixel variant={badgeVariant} class={badgeClass}>{badgeLabel}</Badge>
+<article class={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-gray-900/80 p-5 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${borderClass}`}>
+  <div>
+    <!-- Top Metadata: Badge + Chain / Date -->
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+      <div class="flex items-center gap-2">
+        <span class={`inline-flex items-center gap-1 rounded px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide border ${badgeStyle}`}>
+          {isScam ? "🔴 " : isCaution ? "🟡 " : "🟢 "}
+          {badgeLabel}
+        </span>
+        {chain && (
+          <span class="rounded bg-gray-800 px-2 py-0.5 font-mono text-[11px] text-sky-300 border border-white/5">
+            {chain}
+          </span>
+        )}
+      </div>
+
+      {date && (
+        <time class="font-mono text-xs text-gray-400">{date}</time>
+      )}
     </div>
 
-    <h3 class="h3 text-card-foreground text-balance">{title}</h3>
+    <!-- Title -->
+    <h3 class="text-base sm:text-lg font-bold text-white leading-snug mb-2 group-hover:text-cyan-400 transition-colors">
+      <a href={href} class="focus:outline-none">
+        {title}
+      </a>
+    </h3>
 
-    <p class="text-muted-foreground line-clamp-3 text-sm">{description}</p>
+    <!-- Excerpt -->
+    <p class="text-xs sm:text-sm text-gray-300 line-clamp-3 mb-3 leading-relaxed">
+      {description}
+    </p>
 
-    {
-      tags && tags.length > 0 && (
-        <ul class="flex flex-wrap gap-2">
-          {tags.map((tag) => (
-            <li class="bg-accent text-accent-foreground border-border border-2 px-2 py-0.5 text-xs font-bold uppercase">
-              {tag}
-            </li>
-          ))}
-        </ul>
-      )
-    }
+    <!-- Optional Loss Estimate + Contract Address Row -->
+    {(lossEstimate || contract) && (
+      <div class="flex flex-col gap-1.5 mb-3">
+        {lossEstimate && (
+          <div class="flex items-center gap-2 rounded-lg bg-red-950/30 px-2.5 py-1.5 text-[11px] border border-red-500/20">
+            <span class="text-gray-400 text-[10px] uppercase font-bold">Thiệt Hại:</span>
+            <span class="font-mono font-bold text-rose-400">{lossEstimate}</span>
+            {scamType && <span class="ml-auto font-mono text-[10px] text-amber-300">{scamType}</span>}
+          </div>
+        )}
+        {contract && (
+          <div class="flex items-center justify-between gap-2 rounded-lg bg-black/40 px-2.5 py-1.5 font-mono text-[11px] text-rose-300 border border-white/5">
+            <span class="text-gray-400 text-[10px] uppercase font-bold">Contract:</span>
+            <span class="truncate">{contract}</span>
+            <button
+              type="button"
+              class="copy-btn shrink-0 rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-gray-300 hover:bg-cyan-400 hover:text-black transition"
+              data-copy={contract}
+            >
+              Copy
+            </button>
+          </div>
+        )}
+      </div>
+    )}
 
-    <span
-      class="text-info group-hover:text-success mt-auto inline-flex items-center gap-2 pt-1 text-sm font-bold uppercase"
-    >
-      {cta}
-      <PixelIcon
-        name="arrow-right"
-        class="size-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none"
-      />
-    </span>
+    <!-- Tags -->
+    {tags.length > 0 && (
+      <div class="flex flex-wrap gap-1.5 mb-3">
+        {tags.map((t) => (
+          <span class="rounded bg-gray-800/80 px-2 py-0.5 font-mono text-[10px] text-gray-400 border border-white/5">
+            #{t}
+          </span>
+        ))}
+      </div>
+    )}
   </div>
-</PixelCardLink>
+
+  <!-- Card Footer -->
+  <div class="flex items-center justify-between border-t border-white/10 pt-3 text-xs text-gray-400 mt-2">
+    <div class="flex items-center gap-2">
+      <div class="size-5 rounded-full bg-gray-700 flex items-center justify-center font-bold text-[10px] text-white">
+        {authorName ? authorName.charAt(0) : "CR"}
+      </div>
+      <span class="truncate max-w-[120px] sm:max-w-[180px]">{authorName || "CoinRadar Lab"}</span>
+    </div>
+
+    <a href={href} class="font-semibold text-cyan-400 hover:underline inline-flex items-center gap-1">
+      <span>{cta}</span>
+      <span>&rarr;</span>
+    </a>
+  </div>
+</article>

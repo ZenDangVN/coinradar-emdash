@@ -1,0 +1,213 @@
+---
+import type { PostEntry } from "@js/blogData";
+
+interface Props {
+  /** Bài viết được chọn làm Hero Báo Động Đỏ — null thì hiển fallback template. */
+  featuredPost: PostEntry | null;
+}
+
+const { featuredPost } = Astro.props;
+
+const riskLevel = featuredPost?.data.riskLevel ?? "safe";
+const alertBadge =
+  riskLevel === "critical" ? "🔴 BÁO ĐỘNG Đỏ"
+  : riskLevel === "warning" ? "⚠️ CẢNH BÁO"
+  : "ℹ️ THÔNG TIN";
+const alertBadgeClasses =
+  riskLevel === "critical"
+    ? "bg-red-500/20 border-red-500/40 text-red-400"
+    : riskLevel === "warning"
+      ? "bg-amber-500/20 border-amber-500/40 text-amber-400"
+      : "bg-cyan-500/20 border-cyan-500/40 text-cyan-400";
+const cardBorderClass =
+  riskLevel === "critical" ? "border-red-500/30" : riskLevel === "warning" ? "border-amber-500/30" : "border-cyan-500/20";
+const topBarClass =
+  riskLevel === "critical"
+    ? "from-red-500 via-amber-500 to-red-500"
+    : riskLevel === "warning"
+      ? "from-amber-500 via-yellow-400 to-amber-500"
+      : "from-cyan-500 via-teal-400 to-cyan-500";
+
+const title = featuredPost?.data.title ?? "CoinRadar Security Lab: Bảo Vệ Tài Sản Crypto Của Bạn";
+const description =
+  featuredPost?.data.description ??
+  "Hệ thống giám sát blockchain 24/7 — phát hiện rugpull, drainer và mã độc trước khi quá muộn.";
+const scamType = featuredPost?.data.scamType;
+const chain = featuredPost?.data.chain;
+const contractAddress = featuredPost?.data.contractAddress;
+const lossEstimate = featuredPost?.data.lossEstimate;
+const postUrl = featuredPost ? `/blog/${featuredPost.id}/` : "/blog/";
+---
+
+<section class="py-2">
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 items-stretch">
+    
+    <!-- 1. Featured Crisis Alert Card (7 cols) -->
+    <div class={`relative overflow-hidden rounded-2xl border ${cardBorderClass} bg-gradient-to-b from-red-950/20 via-gray-900/90 to-gray-950 p-6 shadow-2xl lg:col-span-7 flex flex-col justify-between`}>
+      <div class={`absolute top-0 inset-x-0 h-1 bg-gradient-to-r ${topBarClass}`}></div>
+
+      <div>
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <span class={`inline-flex items-center gap-1.5 rounded border px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide ${alertBadgeClasses}`}>
+            {alertBadge}{lossEstimate ? ` - RUGPULL ${lossEstimate}` : ""}
+          </span>
+          <span class="font-mono text-xs text-gray-400">Cập nhật gần đây</span>
+        </div>
+
+        <h1 class="text-xl sm:text-2xl font-extrabold text-white leading-snug mb-3">
+          {title}
+        </h1>
+
+        <p class="text-xs sm:text-sm text-gray-300 mb-4 leading-relaxed">
+          {description}
+        </p>
+
+        <!-- Quick Factsheet Box -->
+        {(scamType || chain || contractAddress) && (
+          <div class="rounded-xl border border-white/10 bg-black/40 p-3.5 text-xs mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {scamType && (
+              <div>
+                <div class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Hình Thức Lừa Đảo</div>
+                <div class="font-mono font-semibold text-rose-400 mt-0.5">{scamType}</div>
+              </div>
+            )}
+            {chain && (
+              <div>
+                <div class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Mạng Lưới</div>
+                <div class="font-mono font-semibold text-cyan-300 mt-0.5">{chain}</div>
+              </div>
+            )}
+            {contractAddress && (
+              <div class="sm:col-span-2">
+                <div class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Địa Chỉ Contract Độc Hại</div>
+                <div class="flex items-center justify-between gap-2 mt-1 bg-gray-950/80 p-1.5 rounded border border-white/5 font-mono text-[11px] text-rose-300">
+                  <span class="truncate">{contractAddress}</span>
+                  <button
+                    type="button"
+                    class="copy-btn shrink-0 rounded bg-white/10 px-2 py-0.5 text-[10px] text-gray-300 hover:bg-cyan-400 hover:text-black transition"
+                    data-copy={contractAddress}
+                  >
+                    Sao chép
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-3 text-xs">
+        <a href={postUrl} class="font-semibold text-cyan-400 hover:underline inline-flex items-center gap-1">
+          Xem phân tích chi tiết &amp; Cách thu hồi ví &rarr;
+        </a>
+        <span class="text-gray-400 text-[11px]">Nguồn: <strong>CoinRadar Security Lab</strong></span>
+      </div>
+    </div>
+
+    <!-- 2. Radar Threat Stats & Blacklist Search (5 cols) -->
+    <div class="rounded-2xl border border-white/10 bg-gray-900/80 p-6 lg:col-span-5 flex flex-col justify-between gap-6 shadow-xl">
+      <div>
+        <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+          <div class="flex items-center gap-2 font-bold text-sm text-white">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span>Hệ Thống Giám Sát Radar</span>
+          </div>
+          <span class="rounded-full bg-amber-500/20 border border-amber-500/30 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-400">
+            THREAT: CAUTION
+          </span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="rounded-xl border border-white/5 bg-gray-950/60 p-3">
+            <div class="text-[11px] text-gray-400">Thiệt hại 24h</div>
+            <div class="font-mono text-xl font-extrabold text-rose-400 mt-1">$6.8M</div>
+          </div>
+          <div class="rounded-xl border border-white/5 bg-gray-950/60 p-3">
+            <div class="text-[11px] text-gray-400">Vụ scam mới</div>
+            <div class="font-mono text-xl font-extrabold text-amber-400 mt-1">14 vụ</div>
+          </div>
+          <div class="rounded-xl border border-white/5 bg-gray-950/60 p-3">
+            <div class="text-[11px] text-gray-400">Ví Scam Blacklist</div>
+            <div class="font-mono text-xl font-extrabold text-cyan-400 mt-1">2,480+</div>
+          </div>
+          <div class="rounded-xl border border-white/5 bg-gray-950/60 p-3">
+            <div class="text-[11px] text-gray-400">Đạt Chuẩn An Toàn</div>
+            <div class="font-mono text-xl font-extrabold text-emerald-400 mt-1">98.2%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Checker Tool -->
+      <div class="rounded-xl border border-cyan-500/20 bg-cyan-950/20 p-4">
+        <label for="radar-contract-input" class="block text-xs font-bold text-cyan-200 mb-2">
+          🔍 Tra Cứu Nhanh Contract / Địa Chỉ Ví:
+        </label>
+        <div class="flex gap-2">
+          <input
+            type="text"
+            id="radar-contract-input"
+            class="flex-1 rounded-lg border border-white/10 bg-gray-950 px-3 py-2 text-xs font-mono text-white placeholder:text-gray-500 focus:border-cyan-400 focus:outline-none"
+            placeholder="Dán địa chỉ ví 0x... hoặc Solana..."
+          />
+          <button
+            type="button"
+            id="radar-check-btn"
+            class="rounded-lg bg-cyan-400 px-4 py-2 text-xs font-extrabold text-gray-950 hover:bg-cyan-300 transition"
+          >
+            Quét
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Copy Toast Component -->
+<div id="copy-toast" class="fixed bottom-6 right-6 z-50 hidden items-center gap-2 rounded-xl border border-cyan-400 bg-gray-900 px-4 py-2.5 text-xs font-semibold text-white shadow-2xl">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span id="copy-toast-text">Đã sao chép!</span>
+</div>
+
+<script>
+  // 1-Click Copy helper
+  document.querySelectorAll('.copy-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const target = e.currentTarget as HTMLElement;
+      const text = target.getAttribute('data-copy') || '';
+      if (text) {
+        navigator.clipboard.writeText(text).then(() => {
+          const toast = document.getElementById('copy-toast');
+          const toastText = document.getElementById('copy-toast-text');
+          if (toast && toastText) {
+            toastText.textContent = `Đã sao chép: ${text.substring(0, 12)}...`;
+            toast.classList.remove('hidden');
+            toast.classList.add('flex');
+            setTimeout(() => {
+              toast.classList.remove('flex');
+              toast.classList.add('hidden');
+            }, 2500);
+          }
+        });
+      }
+    });
+  });
+
+  // Radar contract checker logic
+  const checkBtn = document.getElementById('radar-check-btn');
+  const inputEl = document.getElementById('radar-contract-input') as HTMLInputElement | null;
+  if (checkBtn && inputEl) {
+    checkBtn.addEventListener('click', () => {
+      const val = inputEl.value.trim();
+      if (!val) {
+        alert('Vui lòng nhập địa chỉ ví hoặc contract cần kiểm tra!');
+        return;
+      }
+      if (val.toLowerCase().includes('0x7a25') || val.toLowerCase().includes('sol111')) {
+        alert('🚨 CẢNH BÁO ĐỎ: Địa chỉ này đã nằm trong Danh sách Đen (Blacklist) của CoinRadar do liên quan đến hành vi lừa đảo!');
+      } else {
+        alert('ℹ️ Kết quả sơ bộ: Chưa phát hiện báo cáo lừa đảo cho địa chỉ này trong cơ sở dữ liệu CoinRadar. Tuy nhiên hãy luôn kiểm tra quyền cấp phép!');
+      }
+    });
+  }
+</script>

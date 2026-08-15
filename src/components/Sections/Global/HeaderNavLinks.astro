@@ -1,19 +1,11 @@
 ---
-// src/components/Sections/Global/HeaderNavLinks.astro — the header's nav-item list, rendered in BOTH
-// the desktop <Nav> and the mobile Sheet <Nav> (a sibling sub-part of Header.astro) so the two can't
-// drift. Each item is a retro NavLink with the leading ► pointer that fades in on hover/active.
-// `fullWidth` stretches each item to the drawer's width for the mobile variant. Content is wired from
-// the EmDash "primary" menu (editable in the admin UI), falling back to the static navData config
-// when the menu is missing or empty, with the shared active-route check.
 import { NavItem, NavLink } from "@components/ui/nav";
 import { navItems as fallbackNavItems } from "@config/navData.json";
 import { isActive } from "@js/nav";
 import { getMenu } from "emdash";
 
 interface Props {
-  /** current route, for the aria-current active check. */
   pathname: string;
-  /** the mobile drawer stretches each item to the panel width. */
   fullWidth?: boolean;
 }
 const { pathname, fullWidth = false } = Astro.props as Props;
@@ -28,18 +20,11 @@ const navItems: readonly { label: string; href: string }[] = menu?.items.length
   navItems.map((item) => (
     <NavItem class={fullWidth ? "w-full" : undefined}>
       <NavLink
-        variant="retro"
+        variant="pills"
         href={item.href}
-        class={fullWidth ? "w-full" : undefined}
+        class={fullWidth ? "w-full py-2.5 px-4 text-base" : undefined}
         aria-current={isActive(pathname, item.href) ? "page" : undefined}
       >
-        <svg
-          class="fill-success pointer-events-none absolute top-1/2 left-1.5 h-3.5 w-2.5 -translate-y-1/2 opacity-0 transition-opacity duration-100 group-hover:opacity-100 group-aria-[current=page]:opacity-100"
-          viewBox="0 0 10.41 13.02"
-          aria-hidden="true"
-        >
-          <path d="M10.41 6.64 0 13.02V0Z" />
-        </svg>
         {item.label}
       </NavLink>
     </NavItem>

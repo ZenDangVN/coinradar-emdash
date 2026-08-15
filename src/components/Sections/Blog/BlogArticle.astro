@@ -1,149 +1,256 @@
 ---
-// src/components/Sections/Blog/BlogArticle.astro — the per-post article body (Figma "Pixel Quests -
-// Blog Post", node 5:128). Data-driven: the page passes one post's frontmatter as `post`, the
-// resolved byline, formatted date, read time, and prev/next neighbours; the rendered MDX article
-// prose goes in the default slot. Layout, top → bottom (within the mock's centred reading column):
-//   • breadcrumb: Home › Blog › <title>          (node 5:130)
-//   • article panel — category tag, H1, meta row (avatar · date · read · byline), hero banner,
-//     the MDX body (.blog-prose), footer tags + ◄PREV NEXT► nav   (node 5:139)
-//
-// Reuses ui/pixel-panel (the surface), ui/badge (pixel variant), ui/breadcrumb, the svg/pixel-icons
-// registry, and .primary-focus. Tokens only, so the light theme flips for free.
-import { PixelIcon } from "@components/svg/pixel-icons";
-import { Badge } from "@components/ui/badge";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@components/ui/breadcrumb";
-import { PixelPanel } from "@components/ui/pixel-panel";
 import type { PostData } from "@js/blogData";
 import type { ImageSource } from "@js/images";
-import { type AdjacentLink, categoryMeta } from "@js/postCards";
+import { type AdjacentLink } from "@js/postCards";
 
 interface Props {
   post: PostData;
   author: { name: string; avatar?: ImageSource };
-  /** already-formatted retro date, e.g. "JUL 20, 2026". */
   dateLabel: string;
-  /** ISO-8601 for the <time datetime>. */
   dateISO: string;
   readMinutes: number;
   prev?: AdjacentLink;
   next?: AdjacentLink;
 }
 const { post, author, dateLabel, dateISO, readMinutes, prev, next } = Astro.props as Props;
-const { title, category, heroImage, heroImageAlt, tags } = post;
-
 const {
-  label: categoryLabel,
-  variant: categoryVariant,
-  class: categoryClass,
-} = categoryMeta(category);
+  title,
+  category,
+  heroImage,
+  heroImageAlt,
+  tags,
+  description,
+  riskLevel = "safe",
+  scamType,
+  chain,
+  contractAddress,
+  lossEstimate,
+} = post;
+
+const isScam =
+  riskLevel === "critical" ||
+  category.toLowerCase().includes("scam") ||
+  category.toLowerCase().includes("cảnh báo") ||
+  category.toLowerCase().includes("lừa đảo");
+const isCaution =
+  riskLevel === "warning" ||
+  (!isScam && (category.toLowerCase().includes("rủi ro") || category.toLowerCase().includes("nghi vấn")));
+
+const hasFactsheet = Boolean(scamType || chain || contractAddress || lossEstimate);
 ---
 
-<div class="flex flex-col gap-8">
-  <!-- Breadcrumbs (node 5:130) -->
-  <Breadcrumb>
-    <BreadcrumbItem><BreadcrumbLink href="/">Home</BreadcrumbLink></BreadcrumbItem>
-    <BreadcrumbSeparator />
-    <BreadcrumbItem><BreadcrumbLink href="/blog/">Blog</BreadcrumbLink></BreadcrumbItem>
-    <BreadcrumbSeparator />
-    <BreadcrumbItem><BreadcrumbPage>{title}</BreadcrumbPage></BreadcrumbItem>
-  </Breadcrumb>
+<div class="flex flex-col gap-6">
+  <!-- Breadcrumbs -->
+  <nav class="flex items-center gap-2 text-xs text-gray-400 font-mono">
+    <a href="/" class="hover:text-cyan-400">Trang Chủ</a>
+    <span>/</span>
+    <a href="/blog/" class="hover:text-cyan-400">Cảnh Báo &amp; Tin Tức</a>
+    <span>/</span>
+    <span class="text-gray-200 truncate max-w-[240px]">{title}</span>
+  </nav>
 
-  <!-- Article container (node 5:139) -->
-  <PixelPanel as="article" class="flex flex-col gap-6 p-6 sm:p-8">
-    <!-- Header section (node 5:140) -->
+  <!-- Article Container -->
+  <article class="flex flex-col gap-6 rounded-2xl border border-white/10 bg-gray-900/90 p-6 sm:p-8 shadow-2xl">
+    
+    <!-- Top Risk Alert Banner -->
+    {isScam ? (
+      <div class="rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-xs">
+        <div class="flex items-center gap-2 font-bold text-red-400 mb-1 text-sm uppercase tracking-wide">
+          <span>🚨 CẢNH BÁO ĐỎ: RỦI RO LỪA ĐẢO / MÃ ĐỘC PHÁT HIỆN</span>
+        </div>
+        <p class="text-gray-300 leading-relaxed">
+          Bài viết này phân tích hành vi lừa đảo/drainer/rugpull. Tuyệt đối <strong>không kết nối ví</strong> hoặc <strong>ký bất kỳ thông điệp (Signature)</strong> nào trên các website/contract liên quan.
+        </p>
+      </div>
+    ) : isCaution ? (
+      <div class="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-xs">
+        <div class="flex items-center gap-2 font-bold text-amber-400 mb-1 text-sm uppercase tracking-wide">
+          <span>⚠️ CẢNH BÁO: RỦI RO CAO - CẦN THẬN TRỌNG</span>
+        </div>
+        <p class="text-gray-300 leading-relaxed">
+          Dự án này tiềm ẩn rủi ro về thanh khoản hoặc đội ngũ phát triển chưa xác thực. Hãy tự nghiên cứu kỹ lưỡng trước khi tham gia.
+        </p>
+      </div>
+    ) : null}
+
+    <!-- Header Section -->
     <header class="flex flex-col gap-4">
-      <div>
-        <Badge pixel variant={categoryVariant} class={categoryClass}>{categoryLabel}</Badge>
+      <div class="flex items-center gap-2">
+        <span class={`inline-flex items-center gap-1 rounded px-3 py-1 text-xs font-bold uppercase tracking-wide border ${
+          isScam
+            ? "bg-red-500/10 text-red-400 border-red-500/30"
+            : isCaution
+              ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+              : "bg-cyan-500/10 text-cyan-400 border-cyan-500/30"
+        }`}>
+          {isScam ? "🔴 " : isCaution ? "🟡 " : "🟢 "}
+          {category}
+        </span>
+        {chain && (
+          <span class="rounded bg-gray-800 px-2.5 py-1 font-mono text-xs text-sky-300 border border-white/5">
+            {chain}
+          </span>
+        )}
       </div>
 
-      <h1 class="h1 text-foreground text-balance">{title}</h1>
+      <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight">
+        {title}
+      </h1>
 
-      <!-- Meta row (node 5:145): avatar · date · read time · byline, ruled top and bottom. -->
-      <div class="border-border flex items-center gap-3 border-t-4 border-b-4 py-3">
-        {
-          author.avatar && (
-            <img
-              src={author.avatar.src}
-              width={author.avatar.width}
-              height={author.avatar.height}
-              alt=""
-              loading="eager"
-              decoding="async"
-              class="border-border bg-accent size-8 shrink-0 border-2 object-cover"
-            />
-          )
-        }
-        <p class="text-muted-foreground text-xs font-bold tracking-wide uppercase">
-          <time datetime={dateISO}>{dateLabel}</time> · {readMinutes} Min Read · By {author.name}
+      {description && (
+        <p class="text-sm sm:text-base text-gray-300 leading-relaxed italic border-l-2 border-cyan-400 pl-3">
+          {description}
         </p>
+      )}
+
+      <!-- Meta row -->
+      <div class="flex flex-wrap items-center justify-between gap-3 border-y border-white/10 py-3 text-xs text-gray-400">
+        <div class="flex items-center gap-2">
+          <div class="size-6 rounded-full bg-gray-700 flex items-center justify-center font-bold text-xs text-white">
+            {author.name ? author.name.charAt(0) : "CR"}
+          </div>
+          <span>Bởi <strong>{author.name}</strong></span>
+        </div>
+
+        <div class="flex items-center gap-4 font-mono text-[11px]">
+          <time datetime={dateISO}>{dateLabel}</time>
+          <span>•</span>
+          <span>{readMinutes} phút đọc</span>
+        </div>
       </div>
     </header>
 
-    <!-- Hero banner (node 5:150): a framed figure. Reuses the post's hero image (card + banner share
-         one asset — the placeholder precedent). Eager: it's the article's LCP candidate. -->
-    <figure class="border-border bg-accent overflow-clip border-4">
-      <img
-        src={heroImage.src}
-        width={heroImage.width}
-        height={heroImage.height}
-        alt={heroImageAlt}
-        loading="eager"
-        decoding="async"
-        class="aspect-[16/8] w-full object-cover"
-      />
-    </figure>
+    <!-- Quick Factsheet for Scam/Risk posts -->
+    {hasFactsheet && (
+      <div class="rounded-xl border border-white/10 bg-black/40 p-4 text-xs">
+        <h4 class="font-bold text-white uppercase tracking-wider text-[11px] mb-3 text-cyan-400">
+          📋 Bảng Thông Số Nhận Diện Nhanh (Dữ Liệu CMS)
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono">
+          {scamType && (
+            <div>
+              <div class="text-[10px] uppercase text-gray-400">Loại Hình Đe Dọa</div>
+              <div class="font-semibold text-rose-400">{scamType}</div>
+            </div>
+          )}
+          {chain && (
+            <div>
+              <div class="text-[10px] uppercase text-gray-400">Mạng Lưới Blockchain</div>
+              <div class="font-semibold text-cyan-300">{chain}</div>
+            </div>
+          )}
+          {lossEstimate && (
+            <div>
+              <div class="text-[10px] uppercase text-gray-400">Thiệt Hại Ước Tính</div>
+              <div class="font-semibold text-rose-400">{lossEstimate}</div>
+            </div>
+          )}
+          {contractAddress && (
+            <div class="sm:col-span-2">
+              <div class="text-[10px] uppercase text-gray-400">Địa Chỉ Contract / Ví Độc Hại</div>
+              <div class="flex items-center justify-between gap-2 text-rose-300 bg-gray-950 p-1.5 rounded mt-0.5 border border-white/5">
+                <span class="truncate text-[11px]">{contractAddress}</span>
+                <button
+                  type="button"
+                  class="copy-btn shrink-0 rounded bg-white/10 px-2 py-0.5 text-[10px] text-gray-300 hover:bg-cyan-400 hover:text-black transition"
+                  data-copy={contractAddress}
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    )}
 
-    <!-- Body: the rendered MDX article prose (node 5:152), styled by .blog-prose (global.css). -->
-    <div class="blog-prose">
+    <!-- Hero banner image if present -->
+    {heroImage?.src && (
+      <figure class="overflow-hidden rounded-xl border border-white/10 bg-gray-950">
+        <img
+          src={heroImage.src}
+          width={heroImage.width}
+          height={heroImage.height}
+          alt={heroImageAlt || title}
+          loading="eager"
+          decoding="async"
+          class="aspect-[16/9] w-full object-cover"
+        />
+      </figure>
+    )}
+
+    <!-- Main Body Prose -->
+    <div class="blog-prose pt-2">
       <slot />
     </div>
 
-    <!-- Footer tags + prev/next nav (node 5:198) -->
-    <footer class="border-border flex flex-wrap items-center justify-between gap-4 border-t-4 pt-6">
-      {
-        tags.length > 0 && (
-          <ul class="flex flex-wrap gap-2">
-            {tags.map((tag) => (
-              <li class="bg-accent text-accent-foreground border-border border-2 px-2 py-0.5 text-xs font-bold uppercase">
-                #{tag}
-              </li>
-            ))}
-          </ul>
-        )
-      }
+    <!-- Emergency Action Box at bottom -->
+    {isScam && (
+      <div class="mt-6 rounded-xl border border-amber-500/40 bg-amber-950/20 p-5 text-xs">
+        <h4 class="font-bold text-amber-400 text-sm mb-2">🛡️ Hướng Dẫn Cấp Cứu Khi Đã Lỡ Tương Tác:</h4>
+        <ol class="list-decimal pl-5 space-y-1.5 text-gray-300">
+          <li>Truy cập <a href="https://revoke.cash" target="_blank" rel="noopener noreferrer" class="text-cyan-400 font-bold underline">Revoke.cash</a> và ngắt toàn bộ quyền Allowance đã cấp.</li>
+          <li>Rút toàn bộ số dư coin/token còn lại sang một địa chỉ ví mới hoàn toàn độc lập.</li>
+          <li>Xóa cache trình duyệt và gỡ bỏ liên kết ví khỏi các dApp khả nghi.</li>
+        </ol>
+      </div>
+    )}
 
-      <div class="ml-auto flex items-center gap-5">
-        {
-          prev && (
-            <a
-              href={prev.href}
-              rel="prev"
-              class="primary-focus text-info hover:text-success inline-flex items-center gap-1.5 text-xs font-bold tracking-wide uppercase transition-colors"
-            >
-              <PixelIcon name="arrow-left" class="size-3.5" />
-              Prev
-            </a>
-          )
-        }
-        {
-          next && (
-            <a
-              href={next.href}
-              rel="next"
-              class="primary-focus text-info hover:text-success inline-flex items-center gap-1.5 text-xs font-bold tracking-wide uppercase transition-colors"
-            >
-              Next
-              <PixelIcon name="arrow-right" class="size-3.5" />
-            </a>
-          )
-        }
+    <!-- Footer tags + Prev/Next -->
+    <footer class="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 mt-4">
+      {tags.length > 0 && (
+        <ul class="flex flex-wrap gap-1.5">
+          {tags.map((tag) => (
+            <li class="rounded bg-gray-800 px-2.5 py-1 font-mono text-xs text-gray-300 border border-white/5">
+              #{tag}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div class="ml-auto flex items-center gap-4 text-xs font-semibold">
+        {prev && (
+          <a href={prev.href} rel="prev" class="text-cyan-400 hover:underline">
+            &larr; Bài Trước
+          </a>
+        )}
+        {next && (
+          <a href={next.href} rel="next" class="text-cyan-400 hover:underline">
+            Bài Tiếp &rarr;
+          </a>
+        )}
       </div>
     </footer>
-  </PixelPanel>
+
+  </article>
 </div>
+
+<!-- Copy Toast Notification -->
+<div id="copy-toast" class="fixed bottom-6 right-6 z-50 hidden items-center gap-2 rounded-xl border border-cyan-400 bg-gray-900 px-4 py-2.5 text-xs font-semibold text-white shadow-2xl">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span id="copy-toast-text">Đã sao chép!</span>
+</div>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const target = e.currentTarget as HTMLElement;
+      const text = target.getAttribute('data-copy') || '';
+      if (text) {
+        navigator.clipboard.writeText(text).then(() => {
+          const toast = document.getElementById('copy-toast');
+          const toastText = document.getElementById('copy-toast-text');
+          if (toast && toastText) {
+            toastText.textContent = `Đã sao chép: ${text.substring(0, 12)}...`;
+            toast.classList.remove('hidden');
+            toast.classList.add('flex');
+            setTimeout(() => {
+              toast.classList.remove('flex');
+              toast.classList.add('hidden');
+            }, 2500);
+          }
+        });
+      }
+    });
+  });
+</script>

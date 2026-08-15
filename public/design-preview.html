@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoinRadar - Cổng Thông Tin & Cảnh Báo Lừa Đảo Crypto</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #0a0e17;
+      --bg-surface: #111827;
+      --bg-surface-elevated: #1a2234;
+      --bg-card: rgba(17, 24, 39, 0.85);
+      
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(0, 240, 255, 0.4);
+      
+      --text-primary: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      
+      --accent-cyan: #00f0ff;
+      --accent-cyan-glow: rgba(0, 240, 255, 0.2);
+      
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.12);
+      --danger-border: rgba(239, 68, 68, 0.35);
+      
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.12);
+      --warning-border: rgba(245, 158, 11, 0.35);
+      
+      --safe: #10b981;
+      --safe-bg: rgba(16, 185, 129, 0.12);
+      --safe-border: rgba(16, 185, 129, 0.35);
+      
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 10%, rgba(0, 240, 255, 0.04) 0%, transparent 45%),
+        radial-gradient(circle at 85% 30%, rgba(239, 68, 68, 0.05) 0%, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      outline: none;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* ==========================================================================
+       1. Top Emergency Ticker & Market Bar
+       ========================================================================== */
+    .top-bar {
+      background: #06090e;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      padding: 6px 0;
+      overflow: hidden;
+    }
+
+    .top-bar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .alert-ticker {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .badge-emergency {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--danger);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(0.98); }
+    }
+
+    .ticker-text {
+      color: #fca5a5;
+      font-size: 12.5px;
+    }
+
+    .market-stats {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-up { color: var(--safe); }
+    .stat-down { color: var(--danger); }
+
+    /* ==========================================================================
+       2. Navigation Header
+       ========================================================================== */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 14, 23, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-radar-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #00f0ff, #0284c7);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #04101e;
+      box-shadow: 0 0 15px var(--accent-cyan-glow);
+    }
+
+    .brand-text span {
+      color: var(--accent-cyan);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      list-style: none;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      padding: 6px 0;
+      position: relative;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: #fff;
+    }
+
+    .nav-links a.active::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent-cyan);
+      box-shadow: 0 0 8px var(--accent-cyan);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .search-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 8px 14px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .search-btn:hover {
+      border-color: var(--accent-cyan);
+      color: #fff;
+    }
+
+    .btn-report {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      color: #fff;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 9px 18px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .btn-report:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 18px rgba(239, 68, 68, 0.5);
+    }
+
+    /* ==========================================================================
+       3. Hero Intelligence & Radar Feed
+       ========================================================================== */
+    .hero-section {
+      padding: 32px 0 24px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.8fr 1.2fr;
+      gap: 24px;
+    }
+
+    /* Featured Alert Card */
+    .featured-alert-card {
+      background: linear-gradient(180deg, rgba(239, 68, 68, 0.08) 0%, rgba(17, 24, 39, 0.9) 100%);
+      border: 1px solid var(--danger-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .featured-alert-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #ef4444, #f59e0b);
+    }
+
+    .card-top-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .risk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .risk-badge.critical {
+      background: var(--danger-bg);
+      color: #f87171;
+      border: 1px solid var(--danger-border);
+    }
+
+    .risk-badge.warning {
+      background: var(--warning-bg);
+      color: #fbbf24;
+      border: 1px solid var(--warning-border);
+    }
+
+    .risk-badge.safe {
+      background: var(--safe-bg);
+      color: #34d399;
+      border: 1px solid var(--safe-border);
+    }
+
+    .time-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .featured-title {
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+
+    .featured-summary {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 18px;
+    }
+
+    /* Mini Factsheet Inside Featured Card */
+    .factsheet-box {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      font-size: 12.5px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .fact-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .fact-label {
+      color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .fact-val {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: var(--text-secondary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent-cyan);
+      color: #000;
+    }
+
+    .card-footer-action {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .read-more-link {
+      color: var(--accent-cyan);
+      font-weight: 600;
+      font-size: 13.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .read-more-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Live Threat Meter Widget */
+    .radar-stats-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .radar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 12px;
+    }
+
+    .radar-title {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .threat-pill {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-family: var(--font-mono);
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .metric-box {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px;
+    }
+
+    .metric-num {
+      font-size: 20px;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      margin-top: 4px;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .num-danger { color: #f87171; }
+    .num-warning { color: #fbbf24; }
+    .num-safe { color: #34d399; }
+    .num-cyan { color: var(--accent-cyan); }
+
+    /* Interactive Contract Checker Tool */
+    .checker-tool {
+      background: rgba(0, 240, 255, 0.04);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: var(--radius-md);
+      padding: 14px;
+    }
+
+    .checker-label {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
+      color: #e0f2fe;
+    }
+
+    .checker-input-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .checker-input {
+      flex: 1;
+      background: #090e17;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: #fff;
+      outline: none;
+    }
+
+    .checker-input:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    .checker-submit {
+      background: var(--accent-cyan);
+      color: #04101e;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 0 14px;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s;
+    }
+
+    .checker-submit:hover {
+      background: #38bdf8;
+    }
+
+    /* ==========================================================================
+       4. Filter Tabs & Content Section
+       ========================================================================== */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 24px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .filter-pills {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: var(--bg-surface-elevated);
+      color: #fff;
+      border-color: var(--accent-cyan);
+    }
+
+    .filter-btn.active {
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--accent-cyan);
+    }
+
+    .view-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       5. Main Layout (Articles Grid + Sticky Sidebar)
+       ========================================================================== */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 32px;
+      padding-bottom: 60px;
+    }
+
+    /* Post Card */
+    .posts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .post-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .post-card:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .post-card.scam-warning {
+      border-left: 4px solid var(--danger);
+    }
+
+    .post-card.safe-review {
+      border-left: 4px solid var(--safe);
+    }
+
+    .post-card.caution-review {
+      border-left: 4px solid var(--warning);
+    }
+
+    .post-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .post-tags {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tag-chain {
+      background: #1e293b;
+      color: #93c5fd;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    .post-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.4;
+      color: #fff;
+    }
+
+    .post-title a:hover {
+      color: var(--accent-cyan);
+    }
+
+    .post-excerpt {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+    }
+
+    .post-contract-row {
+      background: #090d16;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .contract-val {
+      color: #fca5a5;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .post-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .author-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .author-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #374151;
+    }
+
+    /* Sidebar Components */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .widget-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+
+    .widget-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 10px;
+    }
+
+    .sidebar-scam-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sidebar-scam-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .sidebar-scam-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .scam-item-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .scam-item-title:hover {
+      color: var(--danger);
+    }
+
+    .scam-item-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+    }
+
+    /* Emergency Security Protocol Box */
+    .protocol-box {
+      background: linear-gradient(180deg, rgba(245, 158, 11, 0.1) 0%, var(--bg-surface) 100%);
+      border: 1px solid var(--warning-border);
+    }
+
+    .checklist-steps {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+      font-size: 12.5px;
+    }
+
+    .checklist-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .step-num {
+      background: var(--warning);
+      color: #000;
+      font-size: 10px;
+      font-weight: 800;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Newsletter / Alert Subscription */
+    .subscribe-box {
+      background: linear-gradient(135deg, #091a28 0%, #111827 100%);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+    }
+
+    .subscribe-input {
+      width: 100%;
+      background: #090e17;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 13px;
+      color: #fff;
+      margin: 12px 0 8px;
+      outline: none;
+    }
+
+    .subscribe-input:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    .btn-sub {
+      width: 100%;
+      background: var(--accent-cyan);
+      color: #000;
+      font-weight: 700;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .btn-sub:hover {
+      background: #38bdf8;
+    }
+
+    /* ==========================================================================
+       6. Footer & Legal Disclaimer
+       ========================================================================== */
+    footer {
+      background: #05080f;
+      border-top: 1px solid var(--border-subtle);
+      padding: 48px 0 24px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1.5fr;
+      gap: 32px;
+      margin-bottom: 36px;
+    }
+
+    .footer-brand p {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .footer-col-title {
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent-cyan);
+    }
+
+    .disclaimer-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1f2937;
+      color: #fff;
+      border: 1px solid var(--accent-cyan);
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      z-index: 1000;
+    }
+
+    /* Responsive */
+    @media (max-width: 960px) {
+      .hero-grid, .main-layout, .footer-grid {
+        grid-template-columns: 1fr;
+      }
+      .nav-links {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. TOP TICKER & BREAKING ALERTS -->
+  <div class="top-bar">
+    <div class="container top-bar-inner">
+      <div class="alert-ticker">
+        <span class="badge-emergency">⚠️ KHẨN CẤP</span>
+        <span class="ticker-text">Phát hiện chiến dịch Phishing giả mạo Airdrop LayerZero V2 trên Telegram và X (Twitter)</span>
+      </div>
+      <div class="market-stats">
+        <div class="stat-item">
+          <span>BTC:</span>
+          <strong>$96,420</strong>
+          <span class="stat-up">+2.4%</span>
+        </div>
+        <div class="stat-item">
+          <span>ETH:</span>
+          <strong>$2,740</strong>
+          <span class="stat-down">-0.8%</span>
+        </div>
+        <div class="stat-item">
+          <span>SOL:</span>
+          <strong>$188.5</strong>
+          <span class="stat-up">+5.1%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. MAIN HEADER -->
+  <header>
+    <div class="container header-content">
+      <a href="#" class="brand-logo">
+        <div class="logo-radar-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+            <path d="M2 12h20"></path>
+          </svg>
+        </div>
+        <div class="brand-text">COIN<span>RADAR</span></div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#" class="active">Trang Chủ</a></li>
+        <li><a href="#">🚨 Cảnh Báo Scam</a></li>
+        <li><a href="#">📊 Phân Tích Coin</a></li>
+        <li><a href="#">🛡️ Cẩm Nang Bảo Mật</a></li>
+        <li><a href="#">⚡ Tin On-Chain</a></li>
+      </ul>
+
+      <div class="header-actions">
+        <button class="search-btn" onclick="document.getElementById('contract-input').focus()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <span>Tìm kiếm...</span>
+        </button>
+        <button class="btn-report" onclick="alert('Mở form gửi bằng chứng báo cáo lừa đảo cho CoinRadar!')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          Báo Cáo Scam
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 3. HERO & RADAR OVERVIEW -->
+  <section class="hero-section">
+    <div class="container hero-grid">
+      
+      <!-- Featured Crisis Alert -->
+      <div class="featured-alert-card">
+        <div class="card-top-meta">
+          <span class="risk-badge critical">🔴 BÁO ĐỘNG ĐỎ - RUGPULL $4.2M</span>
+          <span class="time-meta">Vừa cập nhật 15 phút trước</span>
+        </div>
+        <h1 class="featured-title">Cảnh báo: Dự án "NovaAI Yield" rút sạch thanh khoản (Rugpull), hợp đồng chứa mã độc chặn bán</h1>
+        <p class="featured-summary">
+          Hợp đồng thông minh của NovaAI đã kích hoạt hàm `emergencyWithdraw` độc quyền để bòn rút toàn bộ 4.2 triệu USD thanh khoản trên Uniswap V3. Nhà đầu tư hiện không thể Swap hay bán lại token.
+        </p>
+
+        <!-- Quick Factsheet -->
+        <div class="factsheet-box">
+          <div class="fact-item">
+            <span class="fact-label">Loại Lừa Đảo</span>
+            <span class="fact-val" style="color: #f87171;">Honeypot + Liquidity Drain</span>
+          </div>
+          <div class="fact-item">
+            <span class="fact-label">Mạng Lưới</span>
+            <span class="fact-val">Arbitrum One</span>
+          </div>
+          <div class="fact-item" style="grid-column: span 2;">
+            <span class="fact-label">Địa Chỉ Contract Mã Độc</span>
+            <div class="fact-val">
+              <span style="font-size: 11px;">0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D</span>
+              <button class="copy-btn" onclick="copyText('0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D')">Sao chép</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer-action">
+          <a href="#" class="read-more-link">
+            Xem phân tích chi tiết & Cách thu hồi ví &rarr;
+          </a>
+          <span style="font-size: 12px; color: var(--text-muted);">Tác giả: <strong>CoinRadar Security Lab</strong></span>
+        </div>
+      </div>
+
+      <!-- Radar Threat Stats & Blacklist Search -->
+      <div class="radar-stats-card">
+        <div>
+          <div class="radar-header">
+            <div class="radar-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>Hệ Thống Giám Sát Radar</span>
+            </div>
+            <span class="threat-pill">THREAT LVL: CAUTION</span>
+          </div>
+
+          <div class="metric-grid">
+            <div class="metric-box">
+              <div class="metric-label">Thiệt hại 24h qua</div>
+              <div class="metric-num num-danger">$6.8M</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-label">Vụ lừa đảo mới</div>
+              <div class="metric-num num-warning">14 vụ</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-label">Ví Scam đã Blacklist</div>
+              <div class="metric-num num-cyan">2,480+</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-label">Dự án Đạt Chuẩn An Toàn</div>
+              <div class="metric-num num-safe">98.2%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Checker Tool -->
+        <div class="checker-tool">
+          <label class="checker-label" for="contract-input">🔍 Tra Cứu Nhanh Contract / Địa Chỉ Ví:</label>
+          <div class="checker-input-group">
+            <input type="text" id="contract-input" class="checker-input" placeholder="Dán địa chỉ ví 0x... hoặc tên token" />
+            <button class="checker-submit" onclick="checkContract()">Quét</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. MAIN BODY & FILTER -->
+  <main class="container">
+    
+    <!-- Filter Pills -->
+    <div class="filter-bar">
+      <div class="filter-pills">
+        <button class="filter-btn active">Tất Cả Bài Viết</button>
+        <button class="filter-btn">🚨 Cảnh Báo Scam</button>
+        <button class="filter-btn">📊 Phân Tích Tiềm Năng</button>
+        <button class="filter-btn">🛡️ Bảo Mật Ví & Web3</button>
+        <button class="filter-btn">⚡ Tin Tức On-Chain</button>
+      </div>
+
+      <div class="view-toggle">
+        <span>Sắp xếp: <strong>Mới nhất</strong></span>
+      </div>
+    </div>
+
+    <!-- Main 2-Column Grid -->
+    <div class="main-layout">
+      
+      <!-- Left: Article Feed -->
+      <div class="posts-list">
+        
+        <!-- Article 1: Scam Warning -->
+        <article class="post-card scam-warning">
+          <div class="post-header">
+            <div class="post-tags">
+              <span class="risk-badge critical">🔴 SCAM / DRAINER</span>
+              <span class="tag-chain">Solana</span>
+              <span class="tag-chain">Telegram Bot</span>
+            </div>
+            <span class="time-meta">2 giờ trước</span>
+          </div>
+
+          <h2 class="post-title">
+            <a href="#">Cẩn thận bot Telegram giả mạo "Unibot V3 Free Sniper": Chiếm đoạt Private Key qua chữ ký OTP giả</a>
+          </h2>
+          <p class="post-excerpt">
+            Kẻ tấn công đang chạy quảng cáo trên X dẫn người dùng vào các nhóm Telegram sao chép giao diện Unibot. Khi người dùng nhập OTP kết nối ví, toàn bộ SOL và SPL Tokens sẽ bị rút sạch chỉ trong 3 giây.
+          </p>
+
+          <div class="post-contract-row">
+            <span>Ví nhận tiền lừa đảo (Drainer):</span>
+            <span class="contract-val">SoL11111111111111111111111111111111111111112</span>
+            <button class="copy-btn" onclick="copyText('SoL11111111111111111111111111111111111111112')">Copy</button>
+          </div>
+
+          <div class="post-footer">
+            <div class="author-info">
+              <div class="author-avatar"></div>
+              <span>Bởi <strong>Phan Bảo</strong> • Chuyên gia Audit On-Chain</span>
+            </div>
+            <a href="#" class="read-more-link">Xem giải pháp phòng ngừa &rarr;</a>
+          </div>
+        </article>
+
+        <!-- Article 2: Caution Review -->
+        <article class="post-card caution-review">
+          <div class="post-header">
+            <div class="post-tags">
+              <span class="risk-badge warning">🟡 RỦI RO TRUNG BÌNH</span>
+              <span class="tag-chain">Ethereum</span>
+              <span class="tag-chain">Meme Token</span>
+            </div>
+            <span class="time-meta">5 giờ trước</span>
+          </div>
+
+          <h2 class="post-title">
+            <a href="#">Đánh giá rủi ro Token $PEPECLONE: 78% tổng cung nằm trong tay 5 ví liên kết, thanh khoản chưa khóa</a>
+          </h2>
+          <p class="post-excerpt">
+            Mặc dù token đang tăng trưởng +350% trong 24h, dữ liệu on-chain cho thấy các ví deployer nắm quyền chi phối thanh khoản và có thể rút LP bất cứ lúc nào. Nhà đầu tư nên thận trọng khi Fomo.
+          </p>
+
+          <div class="post-footer">
+            <div class="author-info">
+              <div class="author-avatar"></div>
+              <span>Bởi <strong>CoinRadar Intel</strong></span>
+            </div>
+            <a href="#" class="read-more-link">Xem phân tích On-Chain &rarr;</a>
+          </div>
+        </article>
+
+        <!-- Article 3: Security Guide -->
+        <article class="post-card safe-review">
+          <div class="post-header">
+            <div class="post-tags">
+              <span class="risk-badge safe">🟢 HƯỚNG DẪN AN TOÀN</span>
+              <span class="tag-chain">Tất cả mạng</span>
+              <span class="tag-chain">Bảo Mật Ví</span>
+            </div>
+            <span class="time-meta">1 ngày trước</span>
+          </div>
+
+          <h2 class="post-title">
+            <a href="#">Hướng dẫn cách Revoke (Thu hồi quyền cấp phép token) để không bao giờ bị Drainer hack ví</a>
+          </h2>
+          <p class="post-excerpt">
+            Khi tham gia Dapp, Airdrop hoặc Swap, bạn vô tình cấp quyền không giới hạn (Unlimited Allowance). Đây là lỗ hổng số 1 khiến hàng nghìn ví bị bốc hơi. Hướng dẫn chi tiết cách kiểm tra và ngắt kết nối định kỳ.
+          </p>
+
+          <div class="post-footer">
+            <div class="author-info">
+              <div class="author-avatar"></div>
+              <span>Bởi <strong>Đội Ngũ An Ninh Mạng</strong></span>
+            </div>
+            <a href="#" class="read-more-link">Đọc cẩm nang &rarr;</a>
+          </div>
+        </article>
+
+        <!-- Article 4: Legitimate Coin Analysis -->
+        <article class="post-card safe-review">
+          <div class="post-header">
+            <div class="post-tags">
+              <span class="risk-badge safe">🟢 PHÂN TÍCH TIỀM NĂNG</span>
+              <span class="tag-chain">Layer 2</span>
+              <span class="tag-chain">Tokenomics</span>
+            </div>
+            <span class="time-meta">2 ngày trước</span>
+          </div>
+
+          <h2 class="post-title">
+            <a href="#">Phân tích chuyên sâu Tokenomics Base & OP Superchain: Dòng tiền thực tế đang chảy về đâu?</a>
+          </h2>
+          <p class="post-excerpt">
+            Báo cáo tổng hợp doanh thu mạng lưới, hoạt động của nhà phát triển và mức độ phân bổ token cho hệ sinh thái trong Quý 3/2026.
+          </p>
+
+          <div class="post-footer">
+            <div class="author-info">
+              <div class="author-avatar"></div>
+              <span>Bởi <strong>Trọng Nghĩa</strong> • Data Analyst</span>
+            </div>
+            <a href="#" class="read-more-link">Xem biểu đồ & số liệu &rarr;</a>
+          </div>
+        </article>
+
+      </div>
+
+      <!-- Right: Sticky Sidebar -->
+      <aside class="sidebar">
+        
+        <!-- Widget 1: Top Recent Scams -->
+        <div class="widget-box">
+          <h3 class="widget-title">
+            <span>🔥 Vụ Scam Gần Nhất</span>
+            <span style="color: var(--danger); font-size: 12px;">Live</span>
+          </h3>
+
+          <ul class="sidebar-scam-list">
+            <li class="sidebar-scam-item">
+              <a href="#" class="scam-item-title">Fake Hyperliquid Airdrop Web</a>
+              <div class="scam-item-meta">
+                <span>Phishing Link</span>
+                <span class="stat-down">-$320K</span>
+              </div>
+            </li>
+            <li class="sidebar-scam-item">
+              <a href="#" class="scam-item-title">Token Fake $GRASS trên BSC</a>
+              <div class="scam-item-meta">
+                <span>Honeypot</span>
+                <span class="stat-down">-$145K</span>
+              </div>
+            </li>
+            <li class="sidebar-scam-item">
+              <a href="#" class="scam-item-title">Solana Drainer "PinkSeals"</a>
+              <div class="scam-item-meta">
+                <span>Permit Phishing</span>
+                <span class="stat-down">-$890K</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Widget 2: Emergency Protocol Checklist -->
+        <div class="widget-box protocol-box">
+          <h3 class="widget-title" style="color: var(--warning); border-color: var(--warning-border);">
+            <span>🛡️ Lỡ Dính Scam? Làm Ngay:</span>
+          </h3>
+          <p style="font-size: 12px; color: var(--text-secondary);">Các bước cấp cứu tài sản khi phát hiện ví có dấu hiệu bị lộ:</p>
+          
+          <ul class="checklist-steps">
+            <li class="checklist-step">
+              <span class="step-num">1</span>
+              <span>Truy cập <strong>Revoke.cash</strong> để thu hồi mọi quyền cấp phép (Allowances).</span>
+            </li>
+            <li class="checklist-step">
+              <span class="step-num">2</span>
+              <span>Chuyển ngay các token còn lại sang <strong>một địa chỉ ví mới tinh</strong>.</span>
+            </li>
+            <li class="checklist-step">
+              <span class="step-num">3</span>
+              <span>Ngắt kết nối ví khỏi mọi tiện ích mở rộng trình duyệt khả nghi.</span>
+            </li>
+            <li class="checklist-step">
+              <span class="step-num">4</span>
+              <span>Gửi báo cáo cho CoinRadar để cảnh báo cộng đồng tránh xa.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Widget 3: Newsletter Alert -->
+        <div class="widget-box subscribe-box">
+          <h3 class="widget-title" style="border: none; margin-bottom: 8px;">
+            <span>⚡ Nhận Cảnh Báo Scam Khẩn</span>
+          </h3>
+          <p style="font-size: 12px; color: var(--text-secondary);">
+            Đăng ký để nhận thông báo tức thì khi xuất hiện các thủ đoạn hack ví hoặc dự án rugpull mới.
+          </p>
+          <input type="email" class="subscribe-input" placeholder="Nhập email của bạn..." />
+          <button class="btn-sub" onclick="alert('Cảm ơn bạn đã đăng ký nhận bản tin an ninh từ CoinRadar!')">Đăng Ký Miễn Phí</button>
+        </div>
+
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- 5. FOOTER & DISCLAIMER -->
+  <footer>
+    <div class="container">
+      
+      <!-- Legal Disclaimer -->
+      <div class="disclaimer-box">
+        <strong>⚠️ Tuyên bố miễn trừ trách nhiệm (Legal Disclaimer):</strong> Toàn bộ thông tin trên CoinRadar chỉ phục vụ mục đích nghiên cứu, giáo dục và cảnh báo rủi ro an ninh mạng cho cộng đồng tiền mã hóa. CoinRadar không cung cấp lời khuyên đầu tư tài chính. Giao dịch tiền mã hóa tiềm ẩn rủi ro mất toàn bộ vốn. Hãy luôn tự nghiên cứu kỹ lưỡng (DYOR) trước khi đưa ra quyết định.
+      </div>
+
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="brand-logo">
+            <div class="logo-radar-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+            </div>
+            <div class="brand-text">COIN<span>RADAR</span></div>
+          </div>
+          <p>
+            Nền tảng truyền thông độc lập chuyên cảnh báo lừa đảo, phân tích dữ liệu On-Chain và nâng cao năng lực bảo mật tài sản số cho cộng đồng Web3 tại Việt Nam.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="footer-col-title">Chuyên Mục</h4>
+          <ul class="footer-links">
+            <li><a href="#">Cảnh Báo Lừa Đảo</a></li>
+            <li><a href="#">Phân Tích On-Chain</a></li>
+            <li><a href="#">Cẩm Nang Ví Lạnh</a></li>
+            <li><a href="#">Sàn Giao Dịch</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-col-title">Công Cụ An Ninh</h4>
+          <ul class="footer-links">
+            <li><a href="#">Tra Cứu Contract</a></li>
+            <li><a href="#">Revoke Quyền Ví</a></li>
+            <li><a href="#">Gửi Báo Cáo Scam</a></li>
+            <li><a href="#">Danh Sách Đen (Blacklist)</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-col-title">Cộng Đồng & Cảnh Báo Nhanh</h4>
+          <p style="font-size: 12px; margin-bottom: 12px;">Tham gia kênh Telegram để nhận tin báo động đỏ 24/7:</p>
+          <a href="#" style="display: inline-block; background: #0088cc; color: #fff; padding: 8px 16px; border-radius: var(--radius-sm); font-weight: 600; font-size: 12px;">
+            🚀 Kênh Telegram Cảnh Báo
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>&copy; 2026 CoinRadar. Bảo lưu mọi quyền.</span>
+        <span>Thiết kế tối ưu hiệu năng trên nền tảng Astro & EmDash CMS.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification UI -->
+  <div id="toast" class="toast">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    <span id="toast-msg">Đã sao chép địa chỉ contract!</span>
+  </div>
+
+  <script>
+    // Copy Text Utility with Toast Notification
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Đã sao chép: ' + text.substring(0, 10) + '...');
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+      toastMsg.innerText = msg;
+      toast.style.display = 'flex';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2500);
+    }
+
+    // Quick Contract Checker Demo
+    function checkContract() {
+      const input = document.getElementById('contract-input').value.trim();
+      if (!input) {
+        alert('Vui lòng nhập địa chỉ ví hoặc contract cần kiểm tra!');
+        return;
+      }
+      if (input.toLowerCase().includes('0x7a25') || input.toLowerCase().includes('sol111')) {
+        alert('🚨 CẢNH BÁO ĐỎ: Địa chỉ này đã nằm trong Danh sách Đen (Blacklist) của CoinRadar do liên quan đến hành vi lừa đảo!');
+      } else {
+        alert('ℹ️ Kết quả sơ bộ: Chưa phát hiện báo cáo lừa đảo cho địa chỉ này trong cơ sở dữ liệu CoinRadar. Tuy nhiên hãy luôn kiểm tra quyền cấp phép!');
+      }
+    }
+  </script>
+</body>
+</html>

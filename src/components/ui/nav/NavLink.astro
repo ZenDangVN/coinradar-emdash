@@ -1,7 +1,4 @@
 ---
-// src/components/ui/nav/NavLink.astro — Nav compound part (see ../README.md).
-// Active state = `aria-current="page"` on the caller's side, styled with the `aria-[current=page]:`
-// variant (no "active" prop — the platform already models it). Tokens only.
 import type { HTMLAttributes } from "astro/types";
 import { tv, type VariantProps } from "tailwind-variants";
 
@@ -9,31 +6,25 @@ type Props = HTMLAttributes<"a"> & VariantProps<typeof navLink> & { href: string
 
 export const navLink = tv({
   base: [
-    // Hover is scoped to non-active links (`not-aria-[current=page]:`) so the active state never
-    // needs an override to undo it — each state is stated once.
-    "text-muted-foreground inline-flex items-center gap-2 text-sm font-medium transition-colors",
-    "not-aria-[current=page]:hover:text-foreground outline-none focus-visible:ring-3 focus-visible:ring-outline",
-    "aria-[current=page]:text-foreground",
+    "inline-flex items-center gap-2 text-sm font-semibold transition-all duration-200",
+    "text-gray-400 hover:text-white outline-none focus-visible:ring-2 focus-visible:ring-cyan-400",
+    "aria-[current=page]:text-cyan-400",
   ],
   variants: {
     variant: {
       underline:
-        "border-b-2 border-transparent px-1 py-2 not-aria-[current=page]:hover:border-border aria-[current=page]:border-primary",
+        "border-b-2 border-transparent px-1 py-2 hover:border-cyan-400/50 aria-[current=page]:border-cyan-400",
       pills:
-        "rounded-md px-3 py-1.5 not-aria-[current=page]:hover:bg-muted aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground",
+        "rounded-full px-3.5 py-1.5 hover:bg-gray-800 hover:text-white aria-[current=page]:bg-cyan-500/10 aria-[current=page]:text-cyan-400 aria-[current=page]:border aria-[current=page]:border-cyan-500/30",
       segment:
-        "rounded-md px-3 py-1.5 not-aria-[current=page]:hover:bg-muted/60 aria-[current=page]:bg-muted aria-[current=page]:text-foreground",
-      // The 8-BitQuest pixel-menu link (header, Figma 5:110): Press Start 2P, uppercase, and green
-      // (`text-success`) on hover/active. `group` + `relative` + the reserved `pl-6` let the caller
-      // drop an absolutely-positioned ► pointer into the slot that fades in on hover/active with no
-      // reflow — see Sections/Global/Header.astro.
+        "rounded-lg px-3 py-1.5 hover:bg-gray-800 aria-[current=page]:bg-gray-800 aria-[current=page]:text-white",
       retro: [
-        "group relative px-2 py-1 pl-6 font-display text-[16px] leading-6 uppercase",
-        "text-foreground not-aria-[current=page]:hover:text-success aria-[current=page]:text-success",
+        "px-3 py-1.5 rounded-md text-sm font-medium",
+        "text-gray-300 hover:text-cyan-400 aria-[current=page]:text-cyan-400",
       ],
     },
   },
-  defaultVariants: { variant: "underline" },
+  defaultVariants: { variant: "pills" },
 });
 
 const { variant, href, class: className, ...rest } = Astro.props;

@@ -1,83 +1,71 @@
 /**
- * * Tailwind theme tokens (LAYER 1 of the token architecture)
- *
- * Kept in its own file so it can ALSO be imported into a `.astro` <style> block.
- * Two jobs here:
- *   1. `@theme`        — the brand palette ramps as direct hex (primary / base / status),
- *                        so a rebrand is repointing these hexes (one edit per ramp).
- *   2. `@theme inline` — bridge the semantic runtime vars (defined in global.css) to
- *                        utilities, so `bg-background`/`text-primary` resolve to the
- *                        `:root`/`.dark` variables and flip with the theme.
- *
- * Rule for markup: use `bg-primary`, `text-foreground`, `text-base-700` — NEVER raw
- * `bg-violet-700`/`text-zinc-300`, which bypass theming + dark mode.
+ * Tailwind theme tokens for CoinRadar
  */
 @theme {
-  /* PRIMARY — the retro action/heading blue. Anchored on the two Figma blues:
-     `-300` #99cbff (headings/links, the airy blue) and `-500` #41a6f6 (buttons/badges).
-     Rebrand by repointing these hexes; the semantic `--primary` (global.css) reads `-500`. */
-  --color-primary-50: #eaf4ff;
-  --color-primary-100: #cfe4ff;
-  --color-primary-200: #b3d6ff;
-  --color-primary-300: #99cbff;
-  --color-primary-400: #62b4f8;
-  --color-primary-500: #41a6f6;
-  --color-primary-600: #2b8ae0;
-  --color-primary-700: #1f6cc0;
-  --color-primary-800: #114e90;
-  --color-primary-900: #00395e;
-  --color-primary-950: #003354;
+  /* PRIMARY — Electric Cyan & Tech Blue */
+  --color-primary-50: #e0faff;
+  --color-primary-100: #bbf4fe;
+  --color-primary-200: #7eeaff;
+  --color-primary-300: #38dcfe;
+  --color-primary-400: #00f0ff;
+  --color-primary-500: #00c9e6;
+  --color-primary-600: #009eb8;
+  --color-primary-700: #027d94;
+  --color-primary-800: #0a6477;
+  --color-primary-900: #0c5263;
+  --color-primary-950: #023642;
 
-  /* SECONDARY — the retro pink. `-200` #ffb2ba (SAY HI button / accents), `-600` #892037
-     (LORE badge bg), `-800` #670120 (dark text on pink). */
-  --color-secondary-50: #fff1f3;
-  --color-secondary-100: #ffdfe3;
-  --color-secondary-200: #ffb2ba;
-  --color-secondary-300: #ff9da8;
-  --color-secondary-400: #f4677a;
-  --color-secondary-500: #d83f56;
-  --color-secondary-600: #892037;
-  --color-secondary-700: #6d182b;
-  --color-secondary-800: #670120;
-  --color-secondary-900: #45001a;
-  --color-secondary-950: #2c000d;
+  /* DANGER / SCAM ALERT — Neon Crimson / Red */
+  --color-danger-50: #fef2f2;
+  --color-danger-100: #fee2e2;
+  --color-danger-200: #fecaca;
+  --color-danger-300: #fca5a5;
+  --color-danger-400: #f87171;
+  --color-danger-500: #ef4444;
+  --color-danger-600: #dc2626;
+  --color-danger-700: #b91c1c;
+  --color-danger-800: #991b1b;
+  --color-danger-900: #7f1d1d;
+  --color-danger-950: #450a0a;
 
-  /* SUCCESS — the retro green. The one STATUS colour promoted to a full ramp (warning/error stay
-     semantic-only until something needs them) because the pixel SEND MESSAGE button needs fixed,
-     non-flipping green anchors — `--success` the semantic flips per theme, so the button can't use
-     it. Anchored on the Figma greens: `-400` #63de86 (dark success + button face), `-600` #2f9e57
-     (light success + button depth), `-900` #00401b (dark ink on green). The semantic `--success`
-     (global.css) reads these, so the values live in one place. */
-  --color-success-50: #e6fbef;
-  --color-success-100: #c2f5d6;
-  --color-success-200: #90ecb6;
-  --color-success-300: #7be89a;
-  --color-success-400: #63de86;
-  --color-success-500: #40cd6d;
-  --color-success-600: #2f9e57;
-  --color-success-700: #237c44;
-  --color-success-800: #145c31;
-  --color-success-900: #00401b;
-  --color-success-950: #002d12;
+  /* WARNING / CAUTION — Amber */
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
+  --color-warning-300: #fcd34d;
+  --color-warning-400: #fbbf24;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+  --color-warning-800: #92400e;
+  --color-warning-900: #78350f;
 
-  /* BASE / ink — the single cool navy ramp both themes are cut from. DARK uses the deep end for
-     surfaces (`-900` page, `-800` panels, `-700` input, `-600` tags) + the light end for text
-     (`-100`/`-200`). LIGHT is the reverse: the light end for surfaces (`-100` page, `-50` cards,
-     `-200` muted) + the deep end for ink (`-900`). No separate light palette — light mode is a
-     cool inversion of dark, not a cream "paper" theme. */
-  --color-base-50: #f4f4fb;
-  --color-base-100: #e1e1f7;
-  --color-base-200: #bfc7d3;
-  --color-base-300: #89919c;
-  --color-base-400: #5c6377;
-  --color-base-500: #3f4358;
-  --color-base-600: #323445;
-  --color-base-700: #272939;
-  --color-base-800: #1c1e2f;
-  --color-base-900: #101222;
-  --color-base-950: #0b0d1c;
+  /* SUCCESS / VERIFIED SAFE — Mint Green */
+  --color-success-50: #ecfdf5;
+  --color-success-100: #d1fae5;
+  --color-success-200: #a7f3d0;
+  --color-success-300: #6ee7b7;
+  --color-success-400: #34d399;
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
+  --color-success-700: #047857;
+  --color-success-800: #065f46;
+  --color-success-900: #064e3b;
 
-  /* breakpoints (adds `xs`; the rest mirror Tailwind defaults so they're explicit) */
+  /* BASE / SLATE NAVY SURFACES */
+  --color-base-50: #f8fafc;
+  --color-base-100: #f1f5f9;
+  --color-base-200: #e2e8f0;
+  --color-base-300: #cbd5e1;
+  --color-base-400: #94a3b8;
+  --color-base-500: #64748b;
+  --color-base-600: #475569;
+  --color-base-700: #334155;
+  --color-base-800: #1e293b;
+  --color-base-900: #0f172a;
+  --color-base-950: #0a0e17;
+
+  /* Breakpoints */
   --breakpoint-xs: 400px;
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
@@ -85,55 +73,20 @@
   --breakpoint-xl: 1280px;
   --breakpoint-2xl: 1536px;
 
-  /* font families (loaded in fonts.css). The design is a two-face system:
-       --font-display → Press Start 2P, the pixel heading face (`font-display` utility; drives .h1–.h3)
-       --font-sans    → Space Mono, the body face (the site default, set on <html>)
-       --font-mono    → Space Mono too (body and "code" are the same mono here) */
-  --font-display: "Press Start 2P", "Space Mono", ui-monospace, "Courier New", monospace;
-  --font-sans:
-    "Space Mono", ui-monospace, "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono",
-    "Courier New", monospace;
-  --font-mono:
-    "Space Mono", ui-monospace, "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono",
-    "Courier New", monospace;
+  /* Typography */
+  --font-display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
 
-  /* PIXEL SHADOW — the signature hard offset shadow (zero blur), the retro "sticker" depth on
-     every panel/card/button/badge. The COLOR is theme-aware via `--pixel-shadow` (global.css):
-     pure black in dark mode, a soft slate-navy in light mode (the SAME color as `--border`, so the
-     border and its shadow read as one gentler mark). Falls back to black if the var is ever missing.
-       shadow-pixel     → cards, buttons, badges, stats strip
-       shadow-pixel-lg  → the hero panel */
-  --shadow-pixel: 4px 4px 0 0 var(--pixel-shadow, #000);
-  --shadow-pixel-lg: 8px 8px 0 0 var(--pixel-shadow, #000);
+  /* Shadows */
+  --shadow-glow-cyan: 0 0 20px rgba(0, 240, 255, 0.25);
+  --shadow-glow-danger: 0 0 20px rgba(239, 68, 68, 0.3);
+  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.4);
 
-  /* animation tokens — the Marquee primitive's seamless-loop scroll (see ui/marquee/Marquee.astro).
-     `--marquee-duration` is the per-instance speed knob (set by the `speed` variant). Each track
-     shifts one full copy width + one gap (`-100% - gap`); with identical copies laid side by side the
-     next copy is already in place when one scrolls out, so the loop has no seam. `--marquee-gap` must
-     match the flex gap between/within the copies so the maths line up. */
-  --animate-marquee: marquee var(--marquee-duration, 30s) linear infinite;
-  --animate-marquee-vertical: marquee-vertical var(--marquee-duration, 30s) linear infinite;
-
-  @keyframes marquee {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(calc(-100% - var(--marquee-gap, 1rem)));
-    }
-  }
-  @keyframes marquee-vertical {
-    from {
-      transform: translateY(0);
-    }
-    to {
-      transform: translateY(calc(-100% - var(--marquee-gap, 1rem)));
-    }
-  }
+  /* Animation */
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* "inline" is required so these resolve to the runtime vars, not literal values.
-   https://github.com/tailwindlabs/tailwindcss/discussions/15122#discussioncomment-11356322 */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

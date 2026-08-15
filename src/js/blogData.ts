@@ -8,6 +8,9 @@ import { getEmDashCollection, getEmDashEntry, getEntryTerms, getTermsForEntries 
 
 import { type ImageSource, toImageSource } from "./images";
 
+/** Mức độ rủi ro của một bài post crypto. */
+export type RiskLevel = "critical" | "warning" | "safe";
+
 /** The flat post shape the theme components render (mirrors the old frontmatter field names). */
 export interface PostData {
   title: string;
@@ -27,6 +30,20 @@ export interface PostData {
   authorUrl?: string;
   /** the Portable Text body, rendered with `<PortableText />` from "emdash/ui". */
   body: PortableTextBlock[];
+
+  // ── CoinRadar Crypto Fields ────────────────────────────────────────────────
+  /** Mức độ rủi ro: critical (đỏ) | warning (vàng) | safe (xanh). */
+  riskLevel: RiskLevel;
+  /** Loại hình lừa đảo, ví dụ: Rugpull, Drainer, Honeypot, Phishing… */
+  scamType?: string;
+  /** Mạng blockchain liên quan, ví dụ: Ethereum, Solana, Arbitrum One. */
+  chain?: string;
+  /** Địa chỉ contract hoặc ví lừa đảo đã xác minh. */
+  contractAddress?: string;
+  /** Thiệt hại ước tính, ví dụ: "$4.2M". */
+  lossEstimate?: string;
+  /** Khi true → ghim lên vị trí Hero Báo Động Đỏ trên trang chủ. */
+  isFeatured: boolean;
 }
 
 export interface PostEntry {
@@ -50,6 +67,18 @@ interface RawPostData {
   updatedAt: Date;
   publishedAt: Date | null;
   byline?: { displayName: string; websiteUrl: string | null } | null;
+  // crypto fields
+  risk_level?: string;
+  scam_type?: string;
+  chain?: string;
+  contract_address?: string;
+  loss_estimate?: string;
+  is_featured?: boolean;
+}
+
+function normalizeRiskLevel(raw?: string): RiskLevel {
+  if (raw === "critical" || raw === "warning" || raw === "safe") return raw;
+  return "safe";
 }
 
 function mapPost(
@@ -74,6 +103,13 @@ function mapPost(
       authorName: d.byline?.displayName,
       authorUrl: d.byline?.websiteUrl ?? undefined,
       body: d.content ?? [],
+      // crypto fields
+      riskLevel: normalizeRiskLevel(d.risk_level),
+      scamType: d.scam_type ?? undefined,
+      chain: d.chain ?? undefined,
+      contractAddress: d.contract_address ?? undefined,
+      lossEstimate: d.loss_estimate ?? undefined,
+      isFeatured: d.is_featured ?? false,
     },
   };
 }
@@ -127,6 +163,32 @@ export async function getPost(
     ),
     cacheHint,
   };
+}
+
+/**
+ * Lấy bài post duy nhất được ghim làm hero báo động đỏ (`is_featured = true`).
+ * Nếu không có, trả về bài critical mới nhất, hoặc null.
+ */
+export async function getFeaturedCrisisPost(): Promise<{ post: PostEntry | null; cacheHint: CacheHint }> {
+  const { posts, cacheHint } = await getSortedPosts();
+  const post =
+    posts.find((p) => p.data.isFeatured) ??
+    posts.find((p) => p.data.riskLevel === "critical") ??
+    null;
+  return { post, cacheHint };
+}
+
+/**
+ * Lấy N bài đe dọa (critical / warning) mới nhất để hiển thị trong sidebar Threat Feed.
+ */
+export async function getRecentThreats(
+  limit = 5,
+): Promise<{ posts: PostEntry[]; cacheHint: CacheHint }> {
+  const { posts, cacheHint } = await getSortedPosts();
+  const threats = posts
+    .filter((p) => p.data.riskLevel === "critical" || p.data.riskLevel === "warning")
+    .slice(0, limit);
+  return { posts: threats, cacheHint };
 }
 
 /**

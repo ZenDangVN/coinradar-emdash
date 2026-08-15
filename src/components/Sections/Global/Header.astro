@@ -1,114 +1,227 @@
 ---
-// src/components/Sections/Global/Header.astro — the global site header (8-BitQuest top nav).
-//
-// Cross-page chrome, rendered once in BaseLayout. Reproduces Figma node 5:110 (the dark frame):
-// a full-bleed pixel bar (black bottom border + `shadow-pixel`), the brand on the left, the primary
-// nav on the right. Nav links use the `retro` NavLink variant — Press Start 2P, uppercase, green on
-// hover/active with a leading ► pointer. Below `lg` the nav collapses into a pink 8-bit "MENU"
-// button → Sheet drawer (the four Press Start labels fit the desktop bar at `lg`). Tokens only.
-//
-// Reuses existing pieces — ui/nav, ui/sheet (opened/closed via its `_dialog` data hooks), the pink
-// `.pixel-btn` (global.css), and ui/theme-toggle. No new primitives. The MENU / CLOSE controls are
-// worded (no icons). Content is wired from config: brand = siteData.name, links = navData.
 import HeaderNavLinks from "@components/Sections/Global/HeaderNavLinks.astro";
 import { Nav } from "@components/ui/nav";
 import { Sheet } from "@components/ui/sheet";
-import { ThemeToggle } from "@components/ui/theme-toggle";
-import heroAvatar from "@images/hero-avatar.jpg";
 import { getSiteIdentity } from "@js/siteIdentity";
+import { getFeaturedCrisisPost } from "@js/blogData";
+import { getBinancePrices } from "@js/cryptoPrices";
 
 const pathname = Astro.url.pathname;
-
-// Brand wordmark: the EmDash site title (editable in the admin UI), falling back to the static
-// siteData config while the CMS has no title set.
 const { name: siteName } = await getSiteIdentity();
+const [{ post: crisisPost }, cryptoTickers] = await Promise.all([
+  getFeaturedCrisisPost(),
+  getBinancePrices(),
+]);
 ---
 
+<!-- 1. TOP TICKER & BREAKING ALERTS -->
+<div class="bg-[#06090e] border-b border-white/5 py-1.5 text-xs">
+  <div class="site-container flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap max-w-full sm:max-w-[55%] lg:max-w-[60%]">
+      <span class="inline-flex items-center gap-1 rounded bg-red-600 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white animate-pulse shrink-0">
+        ⚠️ KHẨN CẤP
+      </span>
+      {crisisPost ? (
+        <a href={`/blog/${crisisPost.id}/`} class="text-red-300/90 text-xs hover:text-white hover:underline truncate">
+          {crisisPost.data.title}
+        </a>
+      ) : (
+        <span class="text-red-300/90 text-xs truncate">
+          Hệ thống CoinRadar Radar đang theo dõi 24/7 trên 12 mạng lưới blockchain
+        </span>
+      )}
+    </div>
+    
+    <!-- Real-time Binance Crypto Ticker -->
+    <div class="hidden sm:flex items-center gap-4 font-mono text-[11px] text-gray-400" id="binance-ticker-bar">
+      <div class="flex items-center gap-1 text-[10px] text-gray-500 uppercase tracking-widest mr-1">
+        <span class="size-1.5 rounded-full bg-emerald-400 animate-ping mr-0.5"></span>
+        <span>Binance Live:</span>
+      </div>
+      {cryptoTickers.map((ticker) => {
+        const symbolKey = ticker.symbol.toLowerCase();
+        return (
+          <div
+            id={`crypto-item-${symbolKey}`}
+            class="flex items-center gap-1 transition-colors duration-300 px-1 py-0.5 rounded"
+          >
+            <span class="text-gray-400">{ticker.name}:</span>
+            <strong id={`crypto-price-${symbolKey}`} class="text-white">
+              {ticker.priceFormatted}
+            </strong>
+            <span
+              id={`crypto-change-${symbolKey}`}
+              class={`font-semibold ${ticker.isPositive ? "text-emerald-400" : "text-rose-400"}`}
+            >
+              {ticker.changeFormatted}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</div>
+
+<!-- 2. MAIN HEADER -->
 <header
-  class="bg-background border-border shadow-pixel sticky top-0 z-50 h-16 border-b-4"
+  class="sticky top-0 z-50 border-b border-white/10 bg-[#0a0e17]/90 backdrop-blur-md"
   data-slot="site-header"
 >
-  {
-    /* h-16 on the header (border-box) so the bar is 64px total incl. the 4px border — the Figma frame. */
-  }
-  <div class="site-container flex h-full items-center justify-between">
-    <!-- Brand: pixel avatar + wordmark, links home. The link's accessible name is the wordmark. On a
-         narrow phone the brand (min-w-0) shrinks and the wordmark truncates before the row overflows. -->
+  <div class="site-container flex h-16 items-center justify-between gap-4">
+    <!-- Brand Logo -->
     <a
       href="/"
-      class="primary-focus flex min-w-0 items-center gap-3 sm:gap-4"
+      class="flex shrink-0 items-center gap-3 font-bold tracking-tight text-white transition-opacity hover:opacity-90"
       aria-label={`${siteName} — home`}
     >
-      <span
-        class="bg-accent border-border flex size-9 shrink-0 items-center justify-center overflow-clip border-4 p-1 sm:size-10"
-      >
-        {
-          /* ponytail: plain <img> on the Vite-fingerprinted import, not astro:assets <Image>, so the
-            build needs no Sharp (the template has no Sharp dep; see the README's image note).
-            Fine for a 1KB brand mark; switch to <Image> if the project adds Sharp for real content. */
-        }
-        <img
-          src={heroAvatar.src}
-          width={heroAvatar.width}
-          height={heroAvatar.height}
-          alt=""
-          loading="eager"
-          decoding="async"
-          class="size-full object-cover object-center"
-        />
-      </span>
-      <span
-        class="font-display text-info xs:text-lg truncate text-base tracking-[-0.06em] uppercase sm:text-2xl"
-      >
-        {siteName}
-      </span>
+      <div class="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-sky-600 text-gray-950 shadow-[0_0_15px_rgba(0,240,255,0.3)]">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+          <path d="M2 12h20"></path>
+        </svg>
+      </div>
+      <div class="text-xl font-extrabold tracking-tight">
+        COIN<span class="text-cyan-400">RADAR</span>
+      </div>
     </a>
 
-    <!-- Right cluster: desktop nav + theme toggle, or (below lg) toggle + hamburger. `shrink-0` so
-         the controls keep their size and only the brand gives way on a cramped viewport. -->
-    <div class="flex shrink-0 items-center gap-2 sm:gap-3">
-      <!-- `lg:contents` dissolves the wrapper on desktop so <Nav> flexes with its siblings; below lg
-           the whole nav landmark is display:none (not just visually hidden). -->
-      <div class="hidden lg:contents">
-        <Nav aria-label="Primary" class="gap-6 xl:gap-8">
-          <HeaderNavLinks pathname={pathname} />
-        </Nav>
-      </div>
+    <!-- Desktop Navigation -->
+    <div class="hidden lg:flex items-center gap-1">
+      <Nav aria-label="Primary" class="gap-1">
+        <HeaderNavLinks pathname={pathname} />
+      </Nav>
+    </div>
 
-      <ThemeToggle />
+    <!-- Right Actions -->
+    <div class="flex items-center gap-3">
+      <!-- Search Input / Button -->
+      <a
+        href="/blog/"
+        class="hidden sm:inline-flex items-center gap-2 rounded-full border border-white/10 bg-gray-900 px-3.5 py-1.5 text-xs text-gray-400 transition hover:border-cyan-400 hover:text-white"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span>Tra cứu scam...</span>
+      </a>
 
-      {
-        /* Mobile menu opener — the pink 8-bit button, worded "MENU" (no burger icon). `data-dialog-open`
-          is the Sheet's own `_dialog` hook, so no SheetTrigger wrapper is needed. */
-      }
+      <!-- Report Scam Button -->
+      <a
+        href="/contact/"
+        class="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-red-600 to-rose-700 px-4 py-2 text-xs font-bold text-white shadow-[0_0_15px_rgba(239,68,68,0.35)] transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(239,68,68,0.5)]"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <span>Báo Cáo Scam</span>
+      </a>
+
+      <!-- Mobile Menu Button -->
       <button
         type="button"
         data-dialog-open="site-menu"
         aria-haspopup="dialog"
         aria-controls="site-menu"
-        class="pixel-btn h-9 shrink-0 px-3 text-[10px] leading-none uppercase lg:hidden"
+        class="flex size-9 items-center justify-center rounded-lg border border-white/10 bg-gray-900 text-gray-300 lg:hidden hover:text-white"
+        aria-label="Mở Menu"
       >
-        Menu
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
       </button>
     </div>
   </div>
 
-  <!-- Mobile navigation drawer (native <dialog>). Opened by the MENU button above; `data-dialog-close`
-       is the Sheet's own `_dialog` hook (Escape + backdrop dismiss are automatic). -->
-  <Sheet id="site-menu" side="right" aria-labelledby="site-menu-title" class="w-72 gap-6">
-    <div class="flex items-center justify-between">
-      <span id="site-menu-title" class="font-display text-foreground text-sm uppercase">Menu</span>
+  <!-- Mobile Drawer -->
+  <Sheet id="site-menu" side="right" aria-labelledby="site-menu-title" class="w-80 border-l border-white/10 bg-[#0c101a] p-6">
+    <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+      <span id="site-menu-title" class="text-base font-bold text-white">Menu CoinRadar</span>
       <button
         type="button"
         data-dialog-close
-        class="pixel-btn h-9 shrink-0 px-3 text-[10px] leading-none uppercase"
+        class="rounded-md p-1.5 text-gray-400 hover:bg-gray-800 hover:text-white"
+        aria-label="Đóng Menu"
       >
-        Close
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
     </div>
 
-    <Nav orientation="vertical" aria-label="Primary" class="gap-2">
+    <Nav orientation="vertical" aria-label="Primary" class="flex flex-col gap-2">
       <HeaderNavLinks pathname={pathname} fullWidth />
     </Nav>
   </Sheet>
 </header>
+
+<script>
+  // Real-time Binance Price Polling & Animation
+  function formatPrice(val: number): string {
+    if (val >= 1000) {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }).format(val);
+    }
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 4,
+    }).format(val);
+  }
+
+  const prevPrices: Record<string, number> = {};
+
+  async function updateBinancePrices() {
+    try {
+      const symbols = ["BTCUSDT", "ETHUSDT", "SOLUSDT"];
+      const url = `https://api.binance.com/api/v3/ticker/24hr?symbols=${encodeURIComponent(
+        JSON.stringify(symbols),
+      )}`;
+      const res = await fetch(url);
+      if (!res.ok) return;
+
+      const data = (await res.json()) as Array<{
+        symbol: string;
+        lastPrice: string;
+        priceChangePercent: string;
+      }>;
+
+      data.forEach((item) => {
+        const symbolKey = item.symbol.toLowerCase();
+        const priceEl = document.getElementById(`crypto-price-${symbolKey}`);
+        const changeEl = document.getElementById(`crypto-change-${symbolKey}`);
+        const itemEl = document.getElementById(`crypto-item-${symbolKey}`);
+
+        const newPrice = parseFloat(item.lastPrice);
+        const changePercent = parseFloat(item.priceChangePercent);
+        const isPositive = changePercent >= 0;
+
+        if (priceEl) {
+          priceEl.textContent = formatPrice(newPrice);
+        }
+
+        if (changeEl) {
+          changeEl.textContent = `${isPositive ? "+" : ""}${changePercent.toFixed(2)}%`;
+          changeEl.className = `font-semibold ${isPositive ? "text-emerald-400" : "text-rose-400"}`;
+        }
+
+        // Trigger flash animation on price change
+        if (itemEl && prevPrices[symbolKey] !== undefined) {
+          const oldPrice = prevPrices[symbolKey];
+          if (newPrice > oldPrice) {
+            itemEl.classList.add("bg-emerald-500/20");
+            setTimeout(() => itemEl.classList.remove("bg-emerald-500/20"), 1000);
+          } else if (newPrice < oldPrice) {
+            itemEl.classList.add("bg-rose-500/20");
+            setTimeout(() => itemEl.classList.remove("bg-rose-500/20"), 1000);
+          }
+        }
+
+        prevPrices[symbolKey] = newPrice;
+      });
+    } catch {
+      // Ignore network errors silently during background polling
+    }
+  }
+
+  // Initial fetch and poll every 6 seconds
+  updateBinancePrices();
+  setInterval(updateBinancePrices, 6000);
+</script>

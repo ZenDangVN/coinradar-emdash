@@ -1,87 +1,75 @@
 ---
-// src/components/Sections/Global/Footer.astro — the global site footer (8-BitQuest, Figma node 5:93).
-//
-// Cross-page chrome, rendered once in BaseLayout below <main>. Reproduces the dark Figma frame: a
-// full-bleed pixel bar (black top border, no shadow) with three groups — copyright (left), a
-// social/utility icon row (centre), legal links (right). One desktop frame, so it stacks to a
-// centred column below `md` (measured: the three Press Start groups stop fitting comfortably under
-// ~768px). Tokens only, so the light theme (lavender ground / navy ink) flips for free.
-//
-// Reuses what's here — the pixel-icon registry (`svg/pixel-icons`) for the four social glyphs, and
-// `.site-container` / `.primary-focus` from global.css. No new primitives beyond that registry, no JS.
-// Icons rest **blue in light** (`text-info`) / **pink in dark** (`dark:text-secondary`) and go green
-// (`hover:text-success`) on hover — the same active/hover colour as the nav.
-//
-// Wiring (decisions the single mock didn't specify):
-//   - copyright year is build-time; "GAME OVER" is kept retro flavour, not the site name.
-//   - Privacy/Terms are the real legal routes.
-//   - the two external social destinations resolve through `@config/socialData` (label + glyph + the
-//     sameAs derivation, defined once); RSS and email are site-local, so they stay literal here.
-import { PixelIcon, type PixelIconName } from "@components/svg/pixel-icons";
-import siteData from "@config/siteData.json";
-import { socialLink } from "@config/socialData.json";
-
 const year = new Date().getFullYear();
-const copyright = `© ${year} — Game Over`;
-
-// Social row (Figma 5:96, glyphs swapped to the pixel set). `name` is validated against the
-// pixel-icon registry. Which platforms appear is this section's call; how one resolves is not.
-type SocialLink = { name: PixelIconName; label: string; href: string; external?: boolean };
-const socialLinks: readonly SocialLink[] = [
-  { ...socialLink("linkedin"), external: true },
-  { name: "rss", label: "RSS feed", href: "/rss.xml" },
-  { ...socialLink("youtube"), external: true },
-  { name: "email", label: "Email", href: `mailto:${siteData.author.email}` },
-];
-
-// Legal row (Figma 5:103). Trailing slashes match astro.config `trailingSlash: "always"`.
-const legalLinks = [
-  { label: "Privacy", href: "/privacy/" },
-  { label: "Terms", href: "/terms/" },
-] as const;
 ---
 
-<footer class="bg-background border-border border-t-4" data-slot="site-footer">
-  <div
-    class="site-container flex flex-col items-center gap-4 py-4 text-center md:flex-row md:justify-between md:gap-6 md:text-left"
-  >
-    <!-- Copyright (Figma 5:94): airy-blue Press Start 2P, uppercased. -->
-    <p class="font-display text-info text-xs uppercase">{copyright}</p>
+<footer class="mt-20 border-t border-white/10 bg-[#05080f] pt-12 pb-8 text-sm text-gray-400" data-slot="site-footer">
+  <div class="site-container">
+    
+    <!-- Legal Disclaimer -->
+    <div class="mb-10 rounded-xl border border-white/10 bg-white/[0.02] p-4 text-xs leading-relaxed text-gray-400">
+      <strong class="text-amber-400">⚠️ Tuyên bố miễn trừ trách nhiệm (Legal Disclaimer):</strong> Toàn bộ thông tin trên <strong>CoinRadar</strong> chỉ phục vụ mục đích nghiên cứu, giáo dục và cảnh báo rủi ro an ninh mạng cho cộng đồng tiền mã hóa. CoinRadar không cung cấp lời khuyên đầu tư tài chính. Giao dịch tiền mã hóa tiềm ẩn rủi ro mất toàn bộ vốn. Hãy luôn tự nghiên cứu kỹ lưỡng (DYOR) trước khi đưa ra quyết định.
+    </div>
 
-    <!-- Social icons (Figma 5:96): pixel glyphs, blue in light / pink in dark → green on hover. -->
-    <ul class="flex items-center gap-4">
-      {
-        socialLinks.map((link) => (
-          <li>
-            <a
-              href={link.href}
-              aria-label={link.label}
-              class="primary-focus text-info dark:text-secondary hover:text-success block transition-colors"
-              {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-            >
-              <PixelIcon name={link.name} class="h-5" />
-            </a>
-          </li>
-        ))
-      }
-    </ul>
+    <!-- 4-Column Grid -->
+    <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 mb-10">
+      <!-- Brand column -->
+      <div>
+        <div class="flex items-center gap-2.5 font-bold tracking-tight text-white mb-3">
+          <div class="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-sky-600 text-gray-950 font-black text-xs">
+            CR
+          </div>
+          <div class="text-lg font-extrabold tracking-tight">
+            COIN<span class="text-cyan-400">RADAR</span>
+          </div>
+        </div>
+        <p class="text-xs leading-relaxed text-gray-400">
+          Nền tảng truyền thông độc lập chuyên cảnh báo scam, phân tích dữ liệu On-Chain và nâng cao năng lực bảo mật tài sản số cho cộng đồng Web3.
+        </p>
+      </div>
 
-    <!-- Legal links (Figma 5:103): tiny grey Press Start 2P → green on hover. -->
-    <nav aria-label="Legal">
-      <ul class="flex items-center gap-4">
-        {
-          legalLinks.map((link) => (
-            <li>
-              <a
-                href={link.href}
-                class="primary-focus text-muted-foreground hover:text-success font-display text-[8px] tracking-[2px] uppercase transition-colors"
-              >
-                {link.label}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </nav>
+      <!-- Categories -->
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-3">Chuyên Mục</h4>
+        <ul class="space-y-2 text-xs">
+          <li><a href="/blog/?category=scam" class="hover:text-cyan-400 transition">🚨 Cảnh Báo Lừa Đảo</a></li>
+          <li><a href="/blog/?category=analysis" class="hover:text-cyan-400 transition">📊 Phân Tích On-Chain</a></li>
+          <li><a href="/blog/?category=security" class="hover:text-cyan-400 transition">🛡️ Cẩm Nang Bảo Mật Ví</a></li>
+          <li><a href="/blog/?category=news" class="hover:text-cyan-400 transition">⚡ Tin Tức Thị Trường</a></li>
+        </ul>
+      </div>
+
+      <!-- Tools & Security -->
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-3">Công Cụ An Ninh</h4>
+        <ul class="space-y-2 text-xs">
+          <li><a href="https://revoke.cash" target="_blank" rel="noopener noreferrer" class="hover:text-cyan-400 transition">Thu hồi quyền ví (Revoke.cash) ↗</a></li>
+          <li><a href="/contact/" class="hover:text-cyan-400 transition">Gửi Báo Cáo Scam</a></li>
+          <li><a href="/privacy/" class="hover:text-cyan-400 transition">Chính Sách Bảo Mật</a></li>
+          <li><a href="/terms/" class="hover:text-cyan-400 transition">Điều Khoản Sử Dụng</a></li>
+        </ul>
+      </div>
+
+      <!-- Community Alert -->
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-3">Kênh Cảnh Báo Nhanh</h4>
+        <p class="text-xs text-gray-400 mb-3">
+          Tham gia kênh Telegram để nhận tin báo động đỏ 24/7 khi xuất hiện biến cố bảo mật:
+        </p>
+        <a
+          href="https://t.me/coinradar_vn"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-3.5 py-2 text-xs font-bold text-white transition hover:bg-sky-500"
+        >
+          <span>🚀 Telegram Cảnh Báo</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Bottom Copyright -->
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-gray-400">
+      <div>&copy; {year} CoinRadar. Bảo lưu mọi quyền.</div>
+      <div>Phát triển trên nền tảng Astro 7 & EmDash CMS.</div>
+    </div>
   </div>
 </footer>

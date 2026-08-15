@@ -1,0 +1,99 @@
+---
+import type { PostEntry } from "@js/blogData";
+import { formatDate } from "@js/textUtils";
+
+interface Props {
+  /** Top N bài đe dọa mới nhất (critical / warning) từ CMS. */
+  threatPosts: PostEntry[];
+}
+
+const { threatPosts } = Astro.props;
+---
+
+<aside class="flex flex-col gap-6">
+  
+  <!-- Widget 1: Top Recent Scams -->
+  <div class="rounded-2xl border border-white/10 bg-gray-900/90 p-5 shadow-lg">
+    <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+      <h3 class="font-bold text-sm text-white flex items-center gap-2">
+        <span>🔥 Vụ Scam Gần Nhất</span>
+      </h3>
+      <span class="rounded bg-red-500/20 px-2 py-0.5 font-mono text-[10px] font-extrabold text-red-400">
+        LIVE
+      </span>
+    </div>
+
+    {threatPosts.length > 0 ? (
+      <ul class="space-y-3">
+        {threatPosts.map((post, i) => (
+          <li class={i < threatPosts.length - 1 ? "border-b border-white/5 pb-3" : ""}>
+            <a href={`/blog/${post.id}/`} class="text-xs font-semibold text-gray-200 hover:text-rose-400 transition block mb-1 line-clamp-2">
+              {post.data.title}
+            </a>
+            <div class="flex items-center justify-between font-mono text-[11px] text-gray-400">
+              <span>{post.data.scamType ?? post.data.category}</span>
+              {post.data.lossEstimate && (
+                <span class="text-rose-400 font-bold">-{post.data.lossEstimate}</span>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="text-xs text-gray-400">Chưa có báo cáo mới. Hệ thống đang theo dõi…</p>
+    )}
+  </div>
+
+  <!-- Widget 2: Emergency Action Protocol -->
+  <div class="rounded-2xl border border-amber-500/30 bg-gradient-to-b from-amber-950/20 to-gray-900/90 p-5 shadow-lg">
+    <h3 class="font-bold text-sm text-amber-400 border-b border-amber-500/20 pb-2.5 mb-3 flex items-center gap-1.5">
+      <span>🛡️ Lỡ Dính Scam? Làm Ngay:</span>
+    </h3>
+    <p class="text-xs text-gray-400 mb-3">Quy trình cấp cứu tài sản khẩn cấp khi nghi ngờ ví bị lộ:</p>
+
+    <ol class="space-y-2.5 text-xs text-gray-300">
+      <li class="flex items-start gap-2.5">
+        <span class="flex size-4 shrink-0 items-center justify-center rounded-full bg-amber-400 text-[10px] font-black text-black mt-0.5">1</span>
+        <span>Truy cập <strong>Revoke.cash</strong> để thu hồi mọi quyền cấp phép token (Unlimited Allowance).</span>
+      </li>
+      <li class="flex items-start gap-2.5">
+        <span class="flex size-4 shrink-0 items-center justify-center rounded-full bg-amber-400 text-[10px] font-black text-black mt-0.5">2</span>
+        <span>Chuyển ngay số coin còn lại sang <strong>một địa chỉ ví mới tinh</strong>.</span>
+      </li>
+      <li class="flex items-start gap-2.5">
+        <span class="flex size-4 shrink-0 items-center justify-center rounded-full bg-amber-400 text-[10px] font-black text-black mt-0.5">3</span>
+        <span>Gỡ bỏ các tiện ích extension trình duyệt hoặc Dapp vừa kết nối.</span>
+      </li>
+      <li class="flex items-start gap-2.5">
+        <span class="flex size-4 shrink-0 items-center justify-center rounded-full bg-amber-400 text-[10px] font-black text-black mt-0.5">4</span>
+        <span>Gửi link/contract cho <strong>CoinRadar</strong> để cảnh báo cộng đồng.</span>
+      </li>
+    </ol>
+  </div>
+
+  <!-- Widget 3: Newsletter Alert -->
+  <div class="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-950/30 via-gray-900 to-gray-950 p-5 shadow-lg">
+    <h3 class="font-bold text-sm text-white mb-1.5">
+      ⚡ Nhận Cảnh Báo Scam Khẩn Cấp
+    </h3>
+    <p class="text-xs text-gray-400 mb-3 leading-relaxed">
+      Nhận thông báo tức thì qua email khi phát hiện chiến dịch lừa đảo hoặc mã độc Web3 mới.
+    </p>
+
+    <form class="space-y-2" onsubmit="event.preventDefault(); alert('Cảm ơn bạn đã đăng ký nhận bản tin an ninh từ CoinRadar!');">
+      <input
+        type="email"
+        required
+        placeholder="Nhập email của bạn..."
+        class="w-full rounded-lg border border-white/10 bg-gray-950 px-3 py-2 text-xs text-white placeholder:text-gray-500 focus:border-cyan-400 focus:outline-none"
+      />
+      <button
+        type="submit"
+        class="w-full rounded-lg bg-cyan-400 py-2 text-xs font-bold text-gray-950 transition hover:bg-cyan-300"
+      >
+        Đăng Ký Miễn Phí
+      </button>
+    </form>
+  </div>
+
+</aside>
