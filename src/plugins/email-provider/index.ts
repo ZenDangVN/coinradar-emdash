@@ -8,6 +8,7 @@
  * https://developers.cloudflare.com/email-service/api/send-emails/workers-api/
  */
 
+import { getBinding, getEnvVar } from "@js/cfEnv";
 import type { EmailDeliverEvent, PluginContext, PluginDescriptor, ResolvedPlugin } from "emdash";
 import { definePlugin } from "emdash";
 
@@ -48,28 +49,24 @@ export function createPlugin(options: EmailProviderOptions = {}): ResolvedPlugin
 				handler: async (event: EmailDeliverEvent, ctx: PluginContext) => {
 					const { message, source } = event;
 					const recipients = Array.isArray(message.to) ? message.to : [message.to];
+					
+					// Resolve sender address from Cloudflare runtime env
 					const from =
 						message.from ||
 						options.defaultFrom ||
-						process.env.CONTACT_FROM_EMAIL ||
+						getEnvVar("CONTACT_FROM_EMAIL") ||
 						"admin@coinradar.dev";
 
 					console.log(
-						`[emdash-email-provider] Processing email (${source}) to: ${recipients.join(", ")} | Subject: "${message.subject}"`,
+						`[emdash-email-provider] Processing email (${source}) to: ${recipients.join(", ")} | From: ${from} | Subject: "${message.subject}"`,
 					);
 
-					// 1. Cloudflare Workers SEND_EMAIL or EMAIL binding (Production/Remote runtime)
-					const cfSendEmail =
-						(globalThis as any).SEND_EMAIL ||
-						(globalThis as any).EMAIL ||
-						(globalThis as any).env?.SEND_EMAIL ||
-						(globalThis as any).env?.EMAIL ||
-						(process.env as any).SEND_EMAIL ||
-						(process.env as any).EMAIL;
+					// 1. Resolve Cloudflare Workers Send Email binding (SEND_EMAIL or EMAIL)
+					const cfSendEmail = getBinding("SEND_EMAIL") || getBinding("EMAIL");
 
 					if (cfSendEmail && typeof cfSendEmail.send === "function") {
 						try {
-							// Cloudflare send() supports array of recipients or single string (max 50)
+							// Cloudflare send() accepts structured EmailMessageBuilder
 							const response = await cfSendEmail.send({
 								to: recipients,
 								from: from,
@@ -89,8 +86,9 @@ export function createPlugin(options: EmailProviderOptions = {}): ResolvedPlugin
 						}
 					}
 
-					// 2. Fallback to Resend API if RESEND_API_KEY is configured
-					const apiKey = process.env.RESEND_API_KEY;
+					// 2. Fallback to Resend API if RESEND_API_KEY is configured in Cloudflare runtime env
+					const apiKey = getEnvVar("RESEND_API_KEY");
+
 					if (apiKey && ctx.http) {
 						try {
 							const res = await ctx.http.fetch("https://api.resend.com/emails", {

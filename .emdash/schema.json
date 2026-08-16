@@ -1,0 +1,190 @@
+{
+  "collections": [
+    {
+      "slug": "pages",
+      "label": "Pages",
+      "labelSingular": "Page",
+      "supports": [
+        "drafts",
+        "revisions",
+        "search"
+      ],
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Title",
+          "type": "string",
+          "required": true,
+          "unique": false
+        },
+        {
+          "slug": "content",
+          "label": "Content",
+          "type": "portableText",
+          "required": false,
+          "unique": false
+        }
+      ]
+    },
+    {
+      "slug": "posts",
+      "label": "Posts",
+      "labelSingular": "Post",
+      "supports": [
+        "drafts",
+        "revisions",
+        "search",
+        "seo"
+      ],
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Title",
+          "type": "string",
+          "required": true,
+          "unique": false
+        },
+        {
+          "slug": "featured_image",
+          "label": "Featured Image",
+          "type": "image",
+          "required": false,
+          "unique": false
+        },
+        {
+          "slug": "content",
+          "label": "Content",
+          "type": "portableText",
+          "required": false,
+          "unique": false
+        },
+        {
+          "slug": "excerpt",
+          "label": "Excerpt",
+          "type": "text",
+          "required": false,
+          "unique": false
+        }
+      ]
+    },
+    {
+      "slug": "projects",
+      "label": "Projects",
+      "labelSingular": "Project",
+      "supports": [
+        "drafts",
+        "revisions",
+        "search",
+        "seo"
+      ],
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Title",
+          "type": "string",
+          "required": true,
+          "unique": false
+        },
+        {
+          "slug": "card_title",
+          "label": "Card Title (listing card, falls back to Title)",
+          "type": "string",
+          "required": false,
+          "unique": false
+        },
+        {
+          "slug": "description",
+          "label": "Description (card excerpt + SEO)",
+          "type": "text",
+          "required": false,
+          "unique": false
+        },
+        {
+          "slug": "tagline",
+          "label": "Tagline (detail hero intro)",
+          "type": "text",
+          "required": false,
+          "unique": false
+        },
+        {
+          "slug": "project_status",
+          "label": "Status (complete | in-progress)",
+          "type": "string",
+          "required": true,
+          "unique": false
+        },
+        {
+          "slug": "module_id",
+          "label": "Module ID (e.g. #01_CHAT)",
+          "type": "string",
+          "required": false,
+          "unique": false
+        },
+        {
+          "slug": "sort_order",
+          "label": "Sort Order (ascending)",
+          "type": "integer",
+          "required": false,
+          "unique": false
+        },
+        {
+          "slug": "thumbnail",
+          "label": "Thumbnail",
+          "type": "image",
+          "required": false,
+          "unique": false
+        },
+        {
+          "slug": "tech",
+          "label": "Tech Tags (JSON array of strings)",
+          "type": "json",
+          "required": false,
+          "unique": false
+        },
+        {
+          "slug": "specs",
+          "label": "Specs (JSON array of {label, value})",
+          "type": "json",
+          "required": false,
+          "unique": false
+        },
+        {
+          "slug": "features",
+          "label": "Features (JSON array of {lead, text})",
+          "type": "json",
+          "required": false,
+          "unique": false
+        },
+        {
+          "slug": "arch_caption",
+          "label": "Architecture Caption (e.g. [Packet Switching Engine])",
+          "type": "string",
+          "required": false,
+          "unique": false
+        },
+        {
+          "slug": "challenge",
+          "label": "Challenge (JSON {title, body})",
+          "type": "json",
+          "required": false,
+          "unique": false
+        },
+        {
+          "slug": "solution",
+          "label": "Solution (JSON {title, body})",
+          "type": "json",
+          "required": false,
+          "unique": false
+        },
+        {
+          "slug": "content",
+          "label": "Project Overview",
+          "type": "portableText",
+          "required": false,
+          "unique": false
+        }
+      ]
+    }
+  ],
+  "version": "1786ee6864c891b8"
+}
