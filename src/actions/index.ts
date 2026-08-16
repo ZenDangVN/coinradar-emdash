@@ -25,7 +25,7 @@ export const server = {
       const reason = spamReason(input);
       if (reason) throw new ActionError({ code: "BAD_REQUEST", message: reason });
 
-      const to = getEnvVar("CONTACT_TO_EMAIL", context.locals);
+      const to = await getEnvVar("CONTACT_TO_EMAIL", context.locals);
       if (!to) {
         console.error("[contact] Destination email not configured — set CONTACT_TO_EMAIL in Cloudflare Worker secrets or .env.");
         throw new ActionError({
@@ -36,10 +36,10 @@ export const server = {
 
       // Check if Cloudflare's SEND_EMAIL or EMAIL binding is available
       const sendEmailBinding =
-        getBinding("SEND_EMAIL", context.locals) ||
-        getBinding("EMAIL", context.locals);
+        (await getBinding("SEND_EMAIL", context.locals)) ||
+        (await getBinding("EMAIL", context.locals));
 
-      const from = getEnvVar("CONTACT_FROM_EMAIL", context.locals);
+      const from = await getEnvVar("CONTACT_FROM_EMAIL", context.locals);
 
       if (sendEmailBinding) {
         // Cloudflare Email Routing Workers API
@@ -72,7 +72,7 @@ export const server = {
       }
 
       // 2. Fallback to Resend API
-      const apiKey = getEnvVar("RESEND_API_KEY", context.locals);
+      const apiKey = await getEnvVar("RESEND_API_KEY", context.locals);
       if (!apiKey) {
         console.error(
           "[contact] Cloudflare SEND_EMAIL binding not found, and RESEND_API_KEY is not configured in Cloudflare Worker secrets or .env."

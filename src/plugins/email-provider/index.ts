@@ -51,18 +51,19 @@ export function createPlugin(options: EmailProviderOptions = {}): ResolvedPlugin
 					const recipients = Array.isArray(message.to) ? message.to : [message.to];
 					
 					// Resolve sender address from Cloudflare runtime env
+					const contactFromEnv = await getEnvVar("CONTACT_FROM_EMAIL");
 					const from =
 						message.from ||
 						options.defaultFrom ||
-						getEnvVar("CONTACT_FROM_EMAIL") ||
-						"admin@coinradar.dev";
+						contactFromEnv ||
+						"noreply@coin-radar.com";
 
 					console.log(
 						`[emdash-email-provider] Processing email (${source}) to: ${recipients.join(", ")} | From: ${from} | Subject: "${message.subject}"`,
 					);
 
 					// 1. Resolve Cloudflare Workers Send Email binding (SEND_EMAIL or EMAIL)
-					const cfSendEmail = getBinding("SEND_EMAIL") || getBinding("EMAIL");
+					const cfSendEmail = (await getBinding("SEND_EMAIL")) || (await getBinding("EMAIL"));
 
 					if (cfSendEmail && typeof cfSendEmail.send === "function") {
 						try {
@@ -87,7 +88,7 @@ export function createPlugin(options: EmailProviderOptions = {}): ResolvedPlugin
 					}
 
 					// 2. Fallback to Resend API if RESEND_API_KEY is configured in Cloudflare runtime env
-					const apiKey = getEnvVar("RESEND_API_KEY");
+					const apiKey = await getEnvVar("RESEND_API_KEY");
 
 					if (apiKey && ctx.http) {
 						try {
@@ -122,9 +123,9 @@ export function createPlugin(options: EmailProviderOptions = {}): ResolvedPlugin
 						}
 					}
 
-					// 3. Local Development Notice
+					// 3. Notice when binding is not resolved
 					console.warn(
-						`[emdash-email-provider] ⚠️ Notice: Cloudflare Send Email binding is only active on Cloudflare Workers runtime with a verified domain. In local dev, set RESEND_API_KEY or use console link.\n` +
+						`[emdash-email-provider] ⚠️ Notice: Cloudflare Send Email binding was not reachable.\n` +
 							`Message details:\n` +
 							`  From: ${from}\n` +
 							`  To: ${recipients.join(", ")}\n` +
