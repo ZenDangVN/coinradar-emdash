@@ -4,10 +4,8 @@
  * Implements the exclusive "email:deliver" hook so EmDash CMS can dispatch
  * transactional emails (invitations, magic links, password resets).
  *
- * Transport Priority:
- * 1. Cloudflare Workers Send Email (SEND_EMAIL binding in production runtime)
- * 2. Resend API (via ctx.http if RESEND_API_KEY is configured in environment)
- * 3. Local Dev fallback (logs full email payload + action link to console)
+ * Conforms to Cloudflare Workers Send Email API:
+ * https://developers.cloudflare.com/email-service/api/send-emails/workers-api/
  */
 
 import type { EmailDeliverEvent, PluginContext, PluginDescriptor, ResolvedPlugin } from "emdash";
@@ -60,7 +58,7 @@ export function createPlugin(options: EmailProviderOptions = {}): ResolvedPlugin
 						`[emdash-email-provider] Processing email (${source}) to: ${recipients.join(", ")} | Subject: "${message.subject}"`,
 					);
 
-					// 1. Check for Cloudflare Workers SEND_EMAIL binding (on Cloudflare runtime)
+					// 1. Cloudflare Workers SEND_EMAIL binding (Production runtime)
 					const cfSendEmail =
 						(globalThis as any).SEND_EMAIL ||
 						(globalThis as any).env?.SEND_EMAIL ||
@@ -68,24 +66,22 @@ export function createPlugin(options: EmailProviderOptions = {}): ResolvedPlugin
 
 					if (cfSendEmail && typeof cfSendEmail.send === "function") {
 						try {
-							for (const recipient of recipients) {
-								await cfSendEmail.send({
-									to: [{ email: recipient }],
-									from: { email: from },
-									subject: message.subject,
-									html: message.html ?? message.text,
-									text: message.text,
-									replyTo: message.replyTo,
-								});
-							}
+							// Cloudflare send() supports array of recipients or single string (max 50)
+							const response = await cfSendEmail.send({
+								to: recipients,
+								from: from,
+								subject: message.subject,
+								html: message.html ?? (message.text ? `<p>${message.text}</p>` : undefined),
+								text: message.text,
+								replyTo: message.replyTo,
+							});
 							console.log(
-								`[emdash-email-provider] Successfully delivered email via Cloudflare Send Email binding to ${recipients.join(", ")}`,
+								`[emdash-email-provider] Successfully dispatched via Cloudflare Send Email (ID: ${response?.messageId ?? "ok"}) to ${recipients.join(", ")}`,
 							);
 							return;
-						} catch (cfErr) {
+						} catch (cfErr: any) {
 							console.error(
-								`[emdash-email-provider] Cloudflare Send Email binding failed:`,
-								cfErr,
+								`[emdash-email-provider] Cloudflare Send Email failed | Code: ${cfErr?.code} | Message: ${cfErr?.message}`,
 							);
 						}
 					}
@@ -125,9 +121,9 @@ export function createPlugin(options: EmailProviderOptions = {}): ResolvedPlugin
 						}
 					}
 
-					// 3. In local development without live credentials
+					// 3. Local Development Notice
 					console.warn(
-						`[emdash-email-provider] ⚠️ Dev Mode Notice: No live email service (Cloudflare SEND_EMAIL binding or RESEND_API_KEY) was reachable in this environment.\n` +
+						`[emdash-email-provider] ⚠️ Notice: Cloudflare Send Email binding is only active on Cloudflare Workers runtime with a verified domain. In local dev, set RESEND_API_KEY or use console link.\n` +
 							`Message details:\n` +
 							`  From: ${from}\n` +
 							`  To: ${recipients.join(", ")}\n` +
