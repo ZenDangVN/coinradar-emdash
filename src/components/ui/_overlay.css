@@ -7,6 +7,18 @@
  * properties (opacity / scale / translate), which is what we want.
  */
 
+/* Crucial: ensure closed dialogs/sheets do NOT participate in layout and do NOT cause horizontal overflow */
+dialog:not([open]),
+[data-slot="dialog"]:not([open]),
+[data-slot="sheet"]:not([open]) {
+  display: none !important;
+}
+
+[data-slot="dialog"][open],
+[data-slot="sheet"][open] {
+  display: flex !important;
+}
+
 /* The panel transitions opacity + transform; `display` and `overlay` are made discrete-transitionable
    so the element stays painted (and in the top layer) through its exit animation. */
 [data-slot="dialog"],

@@ -36,7 +36,7 @@ const { title, description, image, noindex = false, schema, article } = Astro.pr
       article={article}
     />
   </head>
-  <body class="flex min-h-[100lvh] flex-col">
+  <body class="flex min-h-[100lvh] flex-col overflow-x-hidden">
     <Header />
     <main class="flex-1">
       <slot />
