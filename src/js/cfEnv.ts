@@ -2,13 +2,13 @@
  * Cloudflare Worker Environment Resolution Helper
  *
  * Safely resolves bindings, environment variables, and secrets across:
- * 1. Cloudflare Workers native runtime `env` (from `cloudflare:workers` or request context)
- * 2. Astro's `locals.runtime.env`
- * 3. Astro's `astro:env/server`
- * 4. Node.js `process.env` (local dev fallback)
+ * 1. Astro Request Context (`locals.runtime.env`)
+ * 2. Cloudflare Worker runtime global (`globalThis.env` or `globalThis`)
+ * 3. Node.js `process.env` (Local Dev / Build)
+ *
+ * NOTE: Do NOT import virtual modules like 'astro:env/server' here because
+ * this file is transitively imported by astro.config.mjs during the Astro config load phase.
  */
-
-import { CONTACT_FROM_EMAIL, CONTACT_TO_EMAIL, RESEND_API_KEY } from "astro:env/server";
 
 export interface WorkerEnv {
 	SEND_EMAIL?: any;
@@ -32,18 +32,13 @@ export function getEnvVar(key: string, locals?: any): string | undefined {
 		return String(locals.runtime.env[key]);
 	}
 
-	// 2. From astro:env/server schema
-	if (key === "CONTACT_FROM_EMAIL" && CONTACT_FROM_EMAIL) return CONTACT_FROM_EMAIL;
-	if (key === "CONTACT_TO_EMAIL" && CONTACT_TO_EMAIL) return CONTACT_TO_EMAIL;
-	if (key === "RESEND_API_KEY" && RESEND_API_KEY) return RESEND_API_KEY;
-
-	// 3. From globalThis (Cloudflare Worker runtime global)
+	// 2. From globalThis (Cloudflare Worker runtime global)
 	const globalEnv = (globalThis as any).env || (globalThis as any);
-	if (globalEnv?.[key]) {
+	if (globalEnv?.[key] !== undefined && globalEnv[key] !== null) {
 		return String(globalEnv[key]);
 	}
 
-	// 4. From Node.js process.env (Local Dev)
+	// 3. From Node.js process.env (Local Dev / Build)
 	if (typeof process !== "undefined" && process.env?.[key]) {
 		return process.env[key];
 	}
