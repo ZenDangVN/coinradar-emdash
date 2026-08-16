@@ -58,11 +58,14 @@ export function createPlugin(options: EmailProviderOptions = {}): ResolvedPlugin
 						`[emdash-email-provider] Processing email (${source}) to: ${recipients.join(", ")} | Subject: "${message.subject}"`,
 					);
 
-					// 1. Cloudflare Workers SEND_EMAIL binding (Production runtime)
+					// 1. Cloudflare Workers SEND_EMAIL or EMAIL binding (Production/Remote runtime)
 					const cfSendEmail =
 						(globalThis as any).SEND_EMAIL ||
+						(globalThis as any).EMAIL ||
 						(globalThis as any).env?.SEND_EMAIL ||
-						(process.env as any).SEND_EMAIL;
+						(globalThis as any).env?.EMAIL ||
+						(process.env as any).SEND_EMAIL ||
+						(process.env as any).EMAIL;
 
 					if (cfSendEmail && typeof cfSendEmail.send === "function") {
 						try {

@@ -36,8 +36,10 @@ export const server = {
         });
       }
 
-      // Check if Cloudflare's SEND_EMAIL binding is available in locals
-      const sendEmailBinding = (context.locals as any)?.runtime?.env?.SEND_EMAIL;
+      // Check if Cloudflare's SEND_EMAIL or EMAIL binding is available in locals
+      const sendEmailBinding =
+        (context.locals as any)?.runtime?.env?.SEND_EMAIL ||
+        (context.locals as any)?.runtime?.env?.EMAIL;
 
       if (sendEmailBinding) {
         // Cloudflare Email Routing Workers API

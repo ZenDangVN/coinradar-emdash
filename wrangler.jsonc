@@ -24,7 +24,8 @@
 	],
 	"send_email": [
 		{
-			"name": "SEND_EMAIL"
+			"name": "SEND_EMAIL",
+			"remote": true
 		}
 	],
 	// Worker Loader for plugin sandboxing
