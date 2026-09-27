@@ -77,9 +77,8 @@ const activePairs = cryptoTickers.map((t) => `${t.symbol}USDT`);
 
       <!-- Ticker Items Display -->
       {isSliderMode ? (
-        <!-- Horizontal Infinite Auto-Slider Mode (> 5 coins) -->
         <div class="ticker-slider-wrapper relative overflow-hidden flex-1 group">
-          <!-- Gradient Masks -->
+          {/* Gradient Masks */}
           <div class="pointer-events-none absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-[#06090e] to-transparent z-10"></div>
           <div class="pointer-events-none absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-[#06090e] to-transparent z-10"></div>
 
@@ -87,7 +86,7 @@ const activePairs = cryptoTickers.map((t) => `${t.symbol}USDT`);
             class="ticker-scroll-track flex items-center gap-4 group-hover:[animation-play-state:paused]"
             style={`--ticker-speed: ${Math.max(18, cryptoTickers.length * 3.5)}s;`}
           >
-            <!-- Track 1 -->
+            {/* Track 1 */}
             <div class="flex items-center gap-4 shrink-0">
               {cryptoTickers.map((ticker) => {
                 const symbolKey = ticker.symbol.toLowerCase();
@@ -110,7 +109,7 @@ const activePairs = cryptoTickers.map((t) => `${t.symbol}USDT`);
                 );
               })}
             </div>
-            <!-- Track 2 (Seamless loop copy) -->
+            {/* Track 2 (Seamless loop copy) */}
             <div class="flex items-center gap-4 shrink-0" aria-hidden="true">
               {cryptoTickers.map((ticker) => {
                 const symbolKey = ticker.symbol.toLowerCase();
@@ -136,7 +135,6 @@ const activePairs = cryptoTickers.map((t) => `${t.symbol}USDT`);
           </div>
         </div>
       ) : (
-        <!-- Static Flex Mode (<= 5 coins) -->
         <div class="flex items-center gap-3 overflow-x-auto no-scrollbar">
           {cryptoTickers.map((ticker) => {
             const symbolKey = ticker.symbol.toLowerCase();
