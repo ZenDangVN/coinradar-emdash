@@ -82,15 +82,11 @@ const { selectedCoins = DEFAULT_COIN_SYMBOLS, isFirstVisit = false } = Astro.pro
       </div>
     </div>
 
-    <!-- Slider Feature Notice -->
+    <!-- Live News Ticker Notice -->
     <div class="px-5 py-2.5 sm:px-6 bg-cyan-950/20 border-b border-cyan-500/10 text-xs text-gray-300 flex items-center gap-2">
-      <span class="text-cyan-400 text-sm">💡</span>
+      <span class="text-cyan-400 text-sm">⚡</span>
       <span id="slider-mode-text" class="text-[11px] sm:text-xs">
-        {selectedCoins.length > 5 ? (
-          <span class="text-cyan-300 font-medium">⚡ Đang kích hoạt chế độ Slider cuộn ngang tự động (chọn > 5 coin).</span>
-        ) : (
-          <span>Mặc định: <strong>BTC, ETH, XRP, SOL, NEAR</strong>. Nếu chọn <strong>trên 5 coin</strong>, hệ thống sẽ tự động kích hoạt <strong>slider cuộn ngang</strong>.</span>
-        )}
+        Danh sách Coin sẽ tự động chạy liên tục trên thanh Header dạng <strong>dải tin tức Live</strong>. Rê chuột vào để tạm dừng xem giá.
       </span>
     </div>
 
@@ -208,12 +204,10 @@ const { selectedCoins = DEFAULT_COIN_SYMBOLS, isFirstVisit = false } = Astro.pro
       }
 
       if (sliderTextEl) {
-        if (selectedSet.size > 5) {
-          sliderTextEl.innerHTML = `<span class="text-cyan-300 font-semibold">⚡ Đã chọn ${selectedSet.size} coin — Header sẽ tự động kích hoạt Slider cuộn ngang!</span>`;
-        } else if (selectedSet.size === 0) {
+        if (selectedSet.size === 0) {
           sliderTextEl.innerHTML = `<span class="text-amber-400 font-medium">⚠️ Chưa chọn coin nào (sẽ tự động dùng 5 coin mặc định).</span>`;
         } else {
-          sliderTextEl.innerHTML = `<span>Đang chọn ${selectedSet.size} coin (chế độ hiển thị tĩnh). Chọn <strong>trên 5 coin</strong> để bật <strong>slider cuộn ngang</strong>.</span>`;
+          sliderTextEl.innerHTML = `<span>Đang chọn <strong>${selectedSet.size} coin</strong> hiển thị trên dải tin tức Live tự chạy. Rê chuột vào dải tin để tạm dừng xem giá.</span>`;
         }
       }
 
