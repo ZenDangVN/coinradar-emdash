@@ -1,0 +1,337 @@
+---
+import { SUPPORTED_COINS, DEFAULT_COIN_SYMBOLS } from "@js/cryptoPrices";
+
+interface Props {
+  selectedCoins?: string[];
+  isFirstVisit?: boolean;
+}
+
+const { selectedCoins = DEFAULT_COIN_SYMBOLS, isFirstVisit = false } = Astro.props;
+---
+
+<dialog
+  id="coin-selector-modal"
+  class="fixed inset-0 m-auto w-[92vw] max-w-xl rounded-2xl border border-cyan-500/30 bg-[#0d131f] p-0 text-white shadow-[0_0_50px_rgba(0,240,255,0.15)] backdrop:bg-black/80 backdrop:backdrop-blur-sm z-[100]"
+  data-is-first-visit={isFirstVisit ? "true" : "false"}
+  data-initial-coins={JSON.stringify(selectedCoins)}
+>
+  <!-- Modal Container -->
+  <div class="flex flex-col max-h-[88vh]">
+    <!-- Modal Header -->
+    <div class="flex items-start justify-between border-b border-white/10 px-5 py-4 sm:px-6">
+      <div class="flex items-center gap-3">
+        <div class="flex size-10 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
+            <path d="M12 6v2m0 8v2"></path>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            Tùy chọn danh sách Coin
+            <span class="rounded bg-cyan-500/20 px-1.5 py-0.5 text-[10px] font-mono text-cyan-300 border border-cyan-500/30">Header</span>
+          </h2>
+          <p class="text-xs text-gray-400 mt-0.5">
+            Lựa chọn các đồng coin theo dõi biến động giá 24/7 từ Binance
+          </p>
+        </div>
+      </div>
+      <button
+        type="button"
+        id="btn-close-coin-modal"
+        class="rounded-lg p-1.5 text-gray-400 hover:bg-white/5 hover:text-white transition-colors cursor-pointer"
+        aria-label="Đóng"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <!-- Quick Actions & Status -->
+    <div class="px-5 pt-3.5 pb-2 sm:px-6 bg-[#0a0e17]/60 border-b border-white/5 flex flex-wrap items-center justify-between gap-2.5">
+      <!-- Quick Select Buttons -->
+      <div class="flex items-center gap-1.5 text-xs">
+        <span class="text-gray-500 text-[11px] mr-1">Chọn nhanh:</span>
+        <button
+          type="button"
+          id="btn-select-default"
+          class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-white/5 hover:bg-cyan-500/20 text-gray-300 hover:text-cyan-300 border border-white/10 hover:border-cyan-500/30 transition-all cursor-pointer"
+        >
+          Mặc định (5 coin)
+        </button>
+        <button
+          type="button"
+          id="btn-select-top10"
+          class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-white/5 hover:bg-cyan-500/20 text-gray-300 hover:text-cyan-300 border border-white/10 hover:border-cyan-500/30 transition-all cursor-pointer"
+        >
+          Top 10
+        </button>
+        <button
+          type="button"
+          id="btn-clear-all"
+          class="px-2 py-1 rounded-md text-[11px] text-gray-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer"
+        >
+          Xóa hết
+        </button>
+      </div>
+
+      <!-- Counter Badge -->
+      <div id="selection-status-badge" class="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-full bg-cyan-950/40 border border-cyan-500/30 text-cyan-300">
+        <span class="size-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+        <span>Đã chọn: <strong id="selected-count-num" class="text-white font-bold">{selectedCoins.length}</strong></span>
+      </div>
+    </div>
+
+    <!-- Slider Feature Notice -->
+    <div class="px-5 py-2.5 sm:px-6 bg-cyan-950/20 border-b border-cyan-500/10 text-xs text-gray-300 flex items-center gap-2">
+      <span class="text-cyan-400 text-sm">💡</span>
+      <span id="slider-mode-text" class="text-[11px] sm:text-xs">
+        {selectedCoins.length > 5 ? (
+          <span class="text-cyan-300 font-medium">⚡ Đang kích hoạt chế độ Slider cuộn ngang tự động (chọn > 5 coin).</span>
+        ) : (
+          <span>Mặc định: <strong>BTC, ETH, XRP, SOL, NEAR</strong>. Nếu chọn <strong>trên 5 coin</strong>, hệ thống sẽ tự động kích hoạt <strong>slider cuộn ngang</strong>.</span>
+        )}
+      </span>
+    </div>
+
+    <!-- Coins Selection Grid -->
+    <div class="p-5 sm:p-6 overflow-y-auto max-h-[46vh] space-y-3">
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5" id="coins-grid">
+        {SUPPORTED_COINS.map((coin) => {
+          const isSelected = selectedCoins.includes(coin.symbol);
+          return (
+            <button
+              type="button"
+              data-coin-btn={coin.symbol}
+              class={`group relative flex items-center justify-between p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                isSelected
+                  ? "bg-cyan-950/40 border-cyan-400/80 text-white shadow-[0_0_12px_rgba(0,240,255,0.15)] ring-1 ring-cyan-400/40"
+                  : "bg-gray-900/60 border-white/10 text-gray-400 hover:border-white/20 hover:bg-gray-800/60 hover:text-gray-200"
+              }`}
+            >
+              <div class="min-w-0 pr-1">
+                <div class="font-mono text-xs font-bold flex items-center gap-1">
+                  <span class={isSelected ? "text-cyan-300" : "text-gray-200 group-hover:text-white"}>{coin.symbol}</span>
+                </div>
+                <div class="text-[11px] text-gray-400 truncate max-w-[85px] sm:max-w-[100px]">
+                  {coin.fullName}
+                </div>
+              </div>
+
+              <!-- Selection Checkbox Indicator -->
+              <div
+                class={`size-5 rounded-md flex items-center justify-center border transition-all shrink-0 ${
+                  isSelected
+                    ? "bg-cyan-500 border-cyan-400 text-gray-950 shadow-[0_0_8px_rgba(0,240,255,0.5)]"
+                    : "border-white/20 bg-gray-950/60 text-transparent group-hover:border-white/40"
+                }`}
+                data-check-icon
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex items-center justify-between border-t border-white/10 px-5 py-4 sm:px-6 bg-[#0a0e17]/80">
+      <span class="text-[11px] text-gray-400 hidden sm:inline">
+        🔒 Danh sách lưu riêng vào Cookie máy bạn
+      </span>
+      <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+        <button
+          type="button"
+          id="btn-dismiss-modal"
+          class="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-medium text-gray-400 hover:text-white hover:bg-white/5 border border-white/10 transition-colors cursor-pointer"
+        >
+          {isFirstVisit ? "Để sau (Dùng mặc định)" : "Đóng"}
+        </button>
+        <button
+          type="button"
+          id="btn-save-coins"
+          class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-5 py-2 rounded-xl text-xs font-bold text-gray-950 bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-300 hover:to-cyan-400 shadow-[0_0_20px_rgba(0,240,255,0.35)] transition-all cursor-pointer"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Lưu & Áp dụng</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  import { DEFAULT_COIN_SYMBOLS } from "@js/cryptoPrices";
+
+  const COOKIE_NAME = "coinradar_selected_coins";
+
+  function getCookie(name: string): string | null {
+    const match = document.cookie.match(new RegExp("(^|;\\s*)(" + name + ")=([^;]*)"));
+    return match ? decodeURIComponent(match[3]) : null;
+  }
+
+  function setCookie(name: string, value: string, days = 365) {
+    const date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    document.cookie = `${name}=${encodeURIComponent(value)};expires=${date.toUTCString()};path=/;SameSite=Lax`;
+  }
+
+  function initCoinModal() {
+    const modal = document.getElementById("coin-selector-modal") as HTMLDialogElement | null;
+    if (!modal) return;
+
+    const isFirstVisitAttr = modal.dataset.isFirstVisit === "true";
+    const initialCoinsRaw = modal.dataset.initialCoins;
+    let initialList: string[] = DEFAULT_COIN_SYMBOLS;
+    try {
+      if (initialCoinsRaw) initialList = JSON.parse(initialCoinsRaw);
+    } catch {}
+
+    const cookieVal = getCookie(COOKIE_NAME);
+    const hasCookie = Boolean(cookieVal);
+
+    // Current selection in modal
+    let selectedSet = new Set<string>(
+      cookieVal ? cookieVal.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean) : initialList
+    );
+
+    const countNumEl = document.getElementById("selected-count-num");
+    const sliderTextEl = document.getElementById("slider-mode-text");
+    const gridEl = document.getElementById("coins-grid");
+
+    function updateUI() {
+      if (countNumEl) {
+        countNumEl.textContent = String(selectedSet.size);
+      }
+
+      if (sliderTextEl) {
+        if (selectedSet.size > 5) {
+          sliderTextEl.innerHTML = `<span class="text-cyan-300 font-semibold">⚡ Đã chọn ${selectedSet.size} coin — Header sẽ tự động kích hoạt Slider cuộn ngang!</span>`;
+        } else if (selectedSet.size === 0) {
+          sliderTextEl.innerHTML = `<span class="text-amber-400 font-medium">⚠️ Chưa chọn coin nào (sẽ tự động dùng 5 coin mặc định).</span>`;
+        } else {
+          sliderTextEl.innerHTML = `<span>Đang chọn ${selectedSet.size} coin (chế độ hiển thị tĩnh). Chọn <strong>trên 5 coin</strong> để bật <strong>slider cuộn ngang</strong>.</span>`;
+        }
+      }
+
+      // Update button styles in grid
+      gridEl?.querySelectorAll<HTMLButtonElement>("[data-coin-btn]").forEach((btn) => {
+        const symbol = btn.dataset.coinBtn;
+        if (!symbol) return;
+        const isSelected = selectedSet.has(symbol);
+        const checkIcon = btn.querySelector("[data-check-icon]");
+        const textSpan = btn.querySelector(".font-mono span");
+
+        if (isSelected) {
+          btn.className = "group relative flex items-center justify-between p-2.5 rounded-xl border text-left transition-all cursor-pointer bg-cyan-950/40 border-cyan-400/80 text-white shadow-[0_0_12px_rgba(0,240,255,0.15)] ring-1 ring-cyan-400/40";
+          if (checkIcon) {
+            checkIcon.className = "size-5 rounded-md flex items-center justify-center border transition-all shrink-0 bg-cyan-500 border-cyan-400 text-gray-950 shadow-[0_0_8px_rgba(0,240,255,0.5)]";
+          }
+          if (textSpan) textSpan.className = "text-cyan-300";
+        } else {
+          btn.className = "group relative flex items-center justify-between p-2.5 rounded-xl border text-left transition-all cursor-pointer bg-gray-900/60 border-white/10 text-gray-400 hover:border-white/20 hover:bg-gray-800/60 hover:text-gray-200";
+          if (checkIcon) {
+            checkIcon.className = "size-5 rounded-md flex items-center justify-center border transition-all shrink-0 border-white/20 bg-gray-950/60 text-transparent group-hover:border-white/40";
+          }
+          if (textSpan) textSpan.className = "text-gray-200 group-hover:text-white";
+        }
+      });
+    }
+
+    // Toggle coin click
+    gridEl?.addEventListener("click", (e) => {
+      const target = (e.target as Element).closest<HTMLButtonElement>("[data-coin-btn]");
+      if (!target) return;
+      const symbol = target.dataset.coinBtn;
+      if (!symbol) return;
+
+      if (selectedSet.has(symbol)) {
+        selectedSet.delete(symbol);
+      } else {
+        selectedSet.add(symbol);
+      }
+      updateUI();
+    });
+
+    // Quick select buttons
+    document.getElementById("btn-select-default")?.addEventListener("click", () => {
+      selectedSet = new Set(DEFAULT_COIN_SYMBOLS);
+      updateUI();
+    });
+
+    document.getElementById("btn-select-top10")?.addEventListener("click", () => {
+      selectedSet = new Set(["BTC", "ETH", "XRP", "SOL", "NEAR", "BNB", "DOGE", "ADA", "AVAX", "LINK"]);
+      updateUI();
+    });
+
+    document.getElementById("btn-clear-all")?.addEventListener("click", () => {
+      selectedSet.clear();
+      updateUI();
+    });
+
+    // Save action
+    document.getElementById("btn-save-coins")?.addEventListener("click", () => {
+      const finalCoins = selectedSet.size > 0 ? Array.from(selectedSet) : DEFAULT_COIN_SYMBOLS;
+      setCookie(COOKIE_NAME, finalCoins.join(","));
+      modal.close();
+      // Reload to seamlessly re-render SSR header with exact slider/static mode and price cache
+      window.location.reload();
+    });
+
+    // Close / Dismiss
+    const handleClose = () => {
+      if (!hasCookie) {
+        // If first visit, record default so user isn't prompted on every navigation
+        setCookie(COOKIE_NAME, DEFAULT_COIN_SYMBOLS.join(","));
+      }
+      modal.close();
+    };
+
+    document.getElementById("btn-close-coin-modal")?.addEventListener("click", handleClose);
+    document.getElementById("btn-dismiss-modal")?.addEventListener("click", handleClose);
+
+    // Light dismiss on backdrop click
+    modal.addEventListener("click", (event) => {
+      const r = modal.getBoundingClientRect();
+      const inside =
+        event.clientX >= r.left &&
+        event.clientX <= r.right &&
+        event.clientY >= r.top &&
+        event.clientY <= r.bottom;
+      if (!inside) handleClose();
+    });
+
+    // First visit prompt check: if no cookie exists, display modal to welcome user and let them choose
+    if (!hasCookie && isFirstVisitAttr) {
+      setTimeout(() => {
+        if (!modal.open) {
+          modal.showModal();
+          updateUI();
+        }
+      }, 700);
+    }
+
+    // Connect any external opener button (e.g. #btn-open-coin-modal in Header)
+    document.querySelectorAll("[data-open-coin-modal]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        // Refresh set from cookie if available
+        const currentCookie = getCookie(COOKIE_NAME);
+        if (currentCookie) {
+          selectedSet = new Set(currentCookie.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean));
+        }
+        updateUI();
+        modal.showModal();
+      });
+    });
+  }
+
+  // Bind on page load
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCoinModal);
+  } else {
+    initCoinModal();
+  }
+</script>

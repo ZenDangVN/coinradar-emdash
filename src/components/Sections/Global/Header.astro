@@ -4,20 +4,35 @@ import { Nav } from "@components/ui/nav";
 import { Sheet } from "@components/ui/sheet";
 import { getSiteIdentity } from "@js/siteIdentity";
 import { getFeaturedCrisisPost } from "@js/blogData";
-import { getBinancePrices } from "@js/cryptoPrices";
+import { getBinancePrices, DEFAULT_COIN_SYMBOLS } from "@js/cryptoPrices";
+import CoinSelectorModal from "@components/Sections/Global/CoinSelectorModal.astro";
 
 const pathname = Astro.url.pathname;
 const { name: siteName } = await getSiteIdentity();
+
+// Read user's selected coins from cookies
+const savedCoinsCookie = Astro.cookies.get("coinradar_selected_coins")?.value;
+const isFirstVisit = !Astro.cookies.has("coinradar_selected_coins");
+
+const selectedCoins = savedCoinsCookie
+  ? savedCoinsCookie.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean)
+  : [...DEFAULT_COIN_SYMBOLS];
+
 const [{ post: crisisPost }, cryptoTickers] = await Promise.all([
   getFeaturedCrisisPost(),
-  getBinancePrices(),
+  getBinancePrices(selectedCoins),
 ]);
+
+// Determine if we need an automatic horizontal slider (> 5 coins) or static display (<= 5 coins)
+const isSliderMode = cryptoTickers.length > 5;
+const activePairs = cryptoTickers.map((t) => `${t.symbol}USDT`);
 ---
 
 <!-- 1. TOP TICKER & BREAKING ALERTS -->
 <div class="bg-[#06090e] border-b border-white/5 py-1.5 text-xs overflow-hidden">
   <div class="site-container flex flex-wrap items-center justify-between gap-3">
-    <div class="flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap max-w-full sm:max-w-[55%] lg:max-w-[60%]">
+    <!-- Breaking Alert / Monitor Status -->
+    <div class="flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap max-w-full sm:max-w-[42%] lg:max-w-[48%] shrink-0">
       <span class="inline-flex items-center gap-1 rounded bg-red-600 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white animate-pulse shrink-0">
         ⚠️ KHẨN CẤP
       </span>
@@ -32,32 +47,119 @@ const [{ post: crisisPost }, cryptoTickers] = await Promise.all([
       )}
     </div>
     
-    <!-- Real-time Binance Crypto Ticker -->
-    <div class="hidden sm:flex items-center gap-4 font-mono text-[11px] text-gray-400" id="binance-ticker-bar">
-      <div class="flex items-center gap-1 text-[10px] text-gray-500 uppercase tracking-widest mr-1">
-        <span class="size-1.5 rounded-full bg-emerald-400 animate-ping mr-0.5"></span>
-        <span>Binance Live:</span>
+    <!-- Real-time Binance Crypto Ticker with Slider / Static Switch -->
+    <div
+      class="hidden sm:flex items-center gap-2 font-mono text-[11px] text-gray-400 overflow-hidden max-w-full sm:max-w-[56%] lg:max-w-[50%]"
+      id="binance-ticker-bar"
+      data-pairs={JSON.stringify(activePairs)}
+    >
+      <!-- Live Indicator + Customize Button -->
+      <div class="flex items-center gap-1.5 shrink-0 pr-1 border-r border-white/10 mr-1">
+        <div class="flex items-center gap-1 text-[10px] text-gray-400 uppercase tracking-wider">
+          <span class="size-1.5 rounded-full bg-emerald-400 animate-ping mr-0.5"></span>
+          <span class="hidden md:inline font-sans">Binance:</span>
+        </div>
+
+        <!-- Customize button to re-open selection modal -->
+        <button
+          type="button"
+          data-open-coin-modal
+          class="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-white/5 hover:bg-cyan-500/20 text-gray-400 hover:text-cyan-300 border border-white/10 hover:border-cyan-500/30 transition-all cursor-pointer"
+          title="Tùy chọn danh sách Coin hiển thị"
+        >
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span class="font-sans text-[10px] hidden md:inline">Tùy chọn</span>
+        </button>
       </div>
-      {cryptoTickers.map((ticker) => {
-        const symbolKey = ticker.symbol.toLowerCase();
-        return (
+
+      <!-- Ticker Items Display -->
+      {isSliderMode ? (
+        <!-- Horizontal Infinite Auto-Slider Mode (> 5 coins) -->
+        <div class="ticker-slider-wrapper relative overflow-hidden flex-1 group">
+          <!-- Gradient Masks -->
+          <div class="pointer-events-none absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-[#06090e] to-transparent z-10"></div>
+          <div class="pointer-events-none absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-[#06090e] to-transparent z-10"></div>
+
           <div
-            id={`crypto-item-${symbolKey}`}
-            class="flex items-center gap-1 transition-colors duration-300 px-1 py-0.5 rounded"
+            class="ticker-scroll-track flex items-center gap-4 group-hover:[animation-play-state:paused]"
+            style={`--ticker-speed: ${Math.max(18, cryptoTickers.length * 3.5)}s;`}
           >
-            <span class="text-gray-400">{ticker.name}:</span>
-            <strong id={`crypto-price-${symbolKey}`} class="text-white">
-              {ticker.priceFormatted}
-            </strong>
-            <span
-              id={`crypto-change-${symbolKey}`}
-              class={`font-semibold ${ticker.isPositive ? "text-emerald-400" : "text-rose-400"}`}
-            >
-              {ticker.changeFormatted}
-            </span>
+            <!-- Track 1 -->
+            <div class="flex items-center gap-4 shrink-0">
+              {cryptoTickers.map((ticker) => {
+                const symbolKey = ticker.symbol.toLowerCase();
+                return (
+                  <div
+                    class="flex items-center gap-1 transition-colors duration-300 px-1 py-0.5 rounded shrink-0"
+                    data-coin-item={symbolKey}
+                  >
+                    <span class="text-gray-400 font-semibold">{ticker.name}:</span>
+                    <strong class="text-white" data-coin-price={symbolKey}>
+                      {ticker.priceFormatted}
+                    </strong>
+                    <span
+                      class={`font-semibold ${ticker.isPositive ? "text-emerald-400" : "text-rose-400"}`}
+                      data-coin-change={symbolKey}
+                    >
+                      {ticker.changeFormatted}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <!-- Track 2 (Seamless loop copy) -->
+            <div class="flex items-center gap-4 shrink-0" aria-hidden="true">
+              {cryptoTickers.map((ticker) => {
+                const symbolKey = ticker.symbol.toLowerCase();
+                return (
+                  <div
+                    class="flex items-center gap-1 transition-colors duration-300 px-1 py-0.5 rounded shrink-0"
+                    data-coin-item={symbolKey}
+                  >
+                    <span class="text-gray-400 font-semibold">{ticker.name}:</span>
+                    <strong class="text-white" data-coin-price={symbolKey}>
+                      {ticker.priceFormatted}
+                    </strong>
+                    <span
+                      class={`font-semibold ${ticker.isPositive ? "text-emerald-400" : "text-rose-400"}`}
+                      data-coin-change={symbolKey}
+                    >
+                      {ticker.changeFormatted}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        );
-      })}
+        </div>
+      ) : (
+        <!-- Static Flex Mode (<= 5 coins) -->
+        <div class="flex items-center gap-3 overflow-x-auto no-scrollbar">
+          {cryptoTickers.map((ticker) => {
+            const symbolKey = ticker.symbol.toLowerCase();
+            return (
+              <div
+                class="flex items-center gap-1 transition-colors duration-300 px-1 py-0.5 rounded shrink-0"
+                data-coin-item={symbolKey}
+              >
+                <span class="text-gray-400 font-semibold">{ticker.name}:</span>
+                <strong class="text-white" data-coin-price={symbolKey}>
+                  {ticker.priceFormatted}
+                </strong>
+                <span
+                  class={`font-semibold ${ticker.isPositive ? "text-emerald-400" : "text-rose-400"}`}
+                  data-coin-change={symbolKey}
+                >
+                  {ticker.changeFormatted}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   </div>
 </div>
@@ -147,6 +249,33 @@ const [{ post: crisisPost }, cryptoTickers] = await Promise.all([
   </Sheet>
 </header>
 
+<!-- Coin Selector Modal for Initial Visit & Customization -->
+<CoinSelectorModal selectedCoins={selectedCoins} isFirstVisit={isFirstVisit} />
+
+<style>
+  @keyframes tickerHorizontalScroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .ticker-scroll-track {
+    display: flex;
+    width: max-content;
+    animation: tickerHorizontalScroll var(--ticker-speed, 25s) linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-scroll-track {
+      animation: none;
+      overflow-x: auto;
+    }
+  }
+</style>
+
 <script>
   // Real-time Binance Price Polling & Animation
   function formatPrice(val: number): string {
@@ -158,21 +287,47 @@ const [{ post: crisisPost }, cryptoTickers] = await Promise.all([
         maximumFractionDigits: 2,
       }).format(val);
     }
+    if (val >= 1) {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 3,
+      }).format(val);
+    }
+    if (val >= 0.01) {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 4,
+      }).format(val);
+    }
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 4,
+      minimumFractionDigits: 4,
+      maximumFractionDigits: 8,
     }).format(val);
   }
 
   const prevPrices: Record<string, number> = {};
 
   async function updateBinancePrices() {
+    const tickerBar = document.getElementById("binance-ticker-bar");
+    if (!tickerBar) return;
+
+    const rawPairs = tickerBar.dataset.pairs;
+    let pairs: string[] = ["BTCUSDT", "ETHUSDT", "XRPUSDT", "SOLUSDT", "NEARUSDT"];
     try {
-      const symbols = ["BTCUSDT", "ETHUSDT", "SOLUSDT"];
+      if (rawPairs) pairs = JSON.parse(rawPairs);
+    } catch {}
+
+    if (!pairs || pairs.length === 0) return;
+
+    try {
       const url = `https://api.binance.com/api/v3/ticker/24hr?symbols=${encodeURIComponent(
-        JSON.stringify(symbols),
+        JSON.stringify(pairs),
       )}`;
       const res = await fetch(url);
       if (!res.ok) return;
@@ -184,33 +339,37 @@ const [{ post: crisisPost }, cryptoTickers] = await Promise.all([
       }>;
 
       data.forEach((item) => {
-        const symbolKey = item.symbol.toLowerCase();
-        const priceEl = document.getElementById(`crypto-price-${symbolKey}`);
-        const changeEl = document.getElementById(`crypto-change-${symbolKey}`);
-        const itemEl = document.getElementById(`crypto-item-${symbolKey}`);
+        const symbolKey = item.symbol.replace(/USDT$/, "").toLowerCase();
+        const priceEls = document.querySelectorAll(`[data-coin-price="${symbolKey}"]`);
+        const changeEls = document.querySelectorAll(`[data-coin-change="${symbolKey}"]`);
+        const itemEls = document.querySelectorAll(`[data-coin-item="${symbolKey}"]`);
 
         const newPrice = parseFloat(item.lastPrice);
         const changePercent = parseFloat(item.priceChangePercent);
         const isPositive = changePercent >= 0;
 
-        if (priceEl) {
-          priceEl.textContent = formatPrice(newPrice);
-        }
+        priceEls.forEach((el) => {
+          el.textContent = formatPrice(newPrice);
+        });
 
-        if (changeEl) {
-          changeEl.textContent = `${isPositive ? "+" : ""}${changePercent.toFixed(2)}%`;
-          changeEl.className = `font-semibold ${isPositive ? "text-emerald-400" : "text-rose-400"}`;
-        }
+        changeEls.forEach((el) => {
+          el.textContent = `${isPositive ? "+" : ""}${changePercent.toFixed(2)}%`;
+          el.className = `font-semibold ${isPositive ? "text-emerald-400" : "text-rose-400"}`;
+        });
 
         // Trigger flash animation on price change
-        if (itemEl && prevPrices[symbolKey] !== undefined) {
+        if (prevPrices[symbolKey] !== undefined) {
           const oldPrice = prevPrices[symbolKey];
           if (newPrice > oldPrice) {
-            itemEl.classList.add("bg-emerald-500/20");
-            setTimeout(() => itemEl.classList.remove("bg-emerald-500/20"), 1000);
+            itemEls.forEach((el) => {
+              el.classList.add("bg-emerald-500/20");
+              setTimeout(() => el.classList.remove("bg-emerald-500/20"), 1000);
+            });
           } else if (newPrice < oldPrice) {
-            itemEl.classList.add("bg-rose-500/20");
-            setTimeout(() => itemEl.classList.remove("bg-rose-500/20"), 1000);
+            itemEls.forEach((el) => {
+              el.classList.add("bg-rose-500/20");
+              setTimeout(() => el.classList.remove("bg-rose-500/20"), 1000);
+            });
           }
         }
 
