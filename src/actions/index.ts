@@ -22,7 +22,7 @@ export const server = {
     accept: "form",
     input: contactSchema,
     handler: async (input, context) => {
-      const logOpts = { locals: context.locals, ctx: context.locals?.runtime?.ctx, type: "action:contact" };
+      const logOpts = { locals: context.locals, ctx: context.locals?.cfContext, type: "action:contact" };
 
       // 1. Spam gates (honeypot + time). Server clock — never the visitor's device.
       const reason = spamReason(input);

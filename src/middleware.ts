@@ -48,36 +48,43 @@ export const onRequest = defineMiddleware(async (context, next) => {
 		response = await next();
 		const durationMs = Math.round(performance.now() - startTime);
 
-		logger.request(
-			{
-				method,
-				path: pathname + url.search,
-				status: response.status,
-				durationMs,
-				ip,
-				userAgent,
-				referer,
-			},
-			{ locals, ctx: locals?.runtime?.ctx },
-		);
+		// Safe background request logging - never crash user request
+		try {
+			logger.request(
+				{
+					method,
+					path: pathname + url.search,
+					status: response.status,
+					durationMs,
+					ip,
+					userAgent,
+					referer,
+				},
+				{ locals, ctx: locals?.cfContext },
+			);
+		} catch (logErr) {
+			console.warn("[middleware] Failed to dispatch request log:", logErr);
+		}
 
 		return response;
 	} catch (err: any) {
 		const durationMs = Math.round(performance.now() - startTime);
 
-		logger.request(
-			{
-				method,
-				path: pathname + url.search,
-				status: 500,
-				durationMs,
-				ip,
-				userAgent,
-				referer,
-				error: err?.message || String(err),
-			},
-			{ locals, ctx: locals?.runtime?.ctx },
-		);
+		try {
+			logger.request(
+				{
+					method,
+					path: pathname + url.search,
+					status: 500,
+					durationMs,
+					ip,
+					userAgent,
+					referer,
+					error: err?.message || String(err),
+				},
+				{ locals, ctx: locals?.cfContext },
+			);
+		} catch {}
 
 		throw err;
 	}

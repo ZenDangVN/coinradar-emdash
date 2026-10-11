@@ -196,12 +196,10 @@ export async function pushToLoki(
 	})();
 
 	// In Cloudflare Workers, use waitUntil if available so response isn't blocked
-	const executionContext =
-		options.ctx?.waitUntil
-			? options.ctx
-			: locals?.runtime?.ctx?.waitUntil
-				? locals.runtime.ctx
-				: null;
+	let executionContext = options.ctx;
+	if (!executionContext?.waitUntil && locals?.cfContext?.waitUntil) {
+		executionContext = locals.cfContext;
+	}
 
 	if (executionContext && typeof executionContext.waitUntil === "function") {
 		try {
