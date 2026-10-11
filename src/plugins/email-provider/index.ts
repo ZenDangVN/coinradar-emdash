@@ -9,8 +9,11 @@
  */
 
 import { getBinding, getEnvVar } from "@js/cfEnv";
-import type { EmailDeliverEvent, PluginContext, PluginDescriptor, ResolvedPlugin } from "emdash";
+import { logger } from "@js/logger";
+import type { PluginContext, PluginDescriptor, ResolvedPlugin } from "emdash";
 import { definePlugin } from "emdash";
+
+export type EmailDeliverEvent = any;
 
 export interface EmailProviderOptions {
 	defaultFrom?: string;
@@ -58,8 +61,12 @@ export function createPlugin(options: EmailProviderOptions = {}): ResolvedPlugin
 						contactFromEnv ||
 						"noreply@coin-radar.com";
 
-					console.log(
+					const logOpts = { type: "plugin:email-provider" };
+
+					logger.info(
 						`[emdash-email-provider] Processing email (${source}) to: ${recipients.join(", ")} | From: ${from} | Subject: "${message.subject}"`,
+						{ source, to: recipients, from, subject: message.subject },
+						logOpts,
 					);
 
 					// 1. Resolve Cloudflare Workers Send Email binding (SEND_EMAIL or EMAIL)
@@ -76,13 +83,17 @@ export function createPlugin(options: EmailProviderOptions = {}): ResolvedPlugin
 								text: message.text,
 								replyTo: message.replyTo,
 							});
-							console.log(
+							logger.info(
 								`[emdash-email-provider] Successfully dispatched via Cloudflare Send Email (ID: ${response?.messageId ?? "ok"}) to ${recipients.join(", ")}`,
+								{ messageId: response?.messageId, recipients },
+								logOpts,
 							);
 							return;
 						} catch (cfErr: any) {
-							console.error(
+							logger.error(
 								`[emdash-email-provider] Cloudflare Send Email failed | Code: ${cfErr?.code} | Message: ${cfErr?.message}`,
+								cfErr,
+								logOpts,
 							);
 						}
 					}
@@ -108,29 +119,29 @@ export function createPlugin(options: EmailProviderOptions = {}): ResolvedPlugin
 							});
 							if (!res.ok) {
 								const detail = await res.text().catch(() => "");
-								console.error(
-									`[emdash-email-provider] Resend delivery failed (${res.status}):`,
-									detail,
+								logger.error(
+									`[emdash-email-provider] Resend delivery failed (${res.status}): ${detail}`,
+									{ status: res.status, detail },
+									logOpts,
 								);
 							} else {
-								console.log(
+								logger.info(
 									`[emdash-email-provider] Successfully delivered email via Resend API to ${recipients.join(", ")}`,
+									{ recipients },
+									logOpts,
 								);
 								return;
 							}
 						} catch (err) {
-							console.error("[emdash-email-provider] Network error delivering email via Resend:", err);
+							logger.error("[emdash-email-provider] Network error delivering email via Resend", err, logOpts);
 						}
 					}
 
 					// 3. Notice when binding is not resolved
-					console.warn(
-						`[emdash-email-provider] ⚠️ Notice: Cloudflare Send Email binding was not reachable.\n` +
-							`Message details:\n` +
-							`  From: ${from}\n` +
-							`  To: ${recipients.join(", ")}\n` +
-							`  Subject: ${message.subject}\n` +
-							`  Text content:\n${message.text ?? "(HTML only)"}`,
+					logger.warn(
+						`[emdash-email-provider] Notice: Cloudflare Send Email binding was not reachable.`,
+						{ from, recipients, subject: message.subject },
+						logOpts,
 					);
 				},
 			},

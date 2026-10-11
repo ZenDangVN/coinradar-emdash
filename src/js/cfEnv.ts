@@ -18,6 +18,10 @@ export interface WorkerEnv {
 	CONTACT_FROM_EMAIL?: string;
 	CONTACT_TO_EMAIL?: string;
 	RESEND_API_KEY?: string;
+	LOKI_PUSH_URL?: string;
+	LOKI_ENABLED?: string | boolean;
+	LOKI_APP?: string;
+	LOKI_ENV?: string;
 	[key: string]: any;
 }
 

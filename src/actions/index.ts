@@ -15,19 +15,29 @@ import { sendContactEmailViaCloudflare } from "@js/cloudflareEmail";
 import { sendContactEmail } from "@js/resend";
 import { ActionError, defineAction } from "astro:actions";
 import { getBinding, getEnvVar } from "@js/cfEnv";
+import { logger } from "@js/logger";
 
 export const server = {
   contact: defineAction({
     accept: "form",
     input: contactSchema,
     handler: async (input, context) => {
+      const logOpts = { locals: context.locals, ctx: context.locals?.runtime?.ctx, type: "action:contact" };
+
       // 1. Spam gates (honeypot + time). Server clock — never the visitor's device.
       const reason = spamReason(input);
-      if (reason) throw new ActionError({ code: "BAD_REQUEST", message: reason });
+      if (reason) {
+        logger.warn(`[contact] Blocked by spam filter: ${reason}`, { reason }, logOpts);
+        throw new ActionError({ code: "BAD_REQUEST", message: reason });
+      }
 
       const to = await getEnvVar("CONTACT_TO_EMAIL", context.locals);
       if (!to) {
-        console.error("[contact] Destination email not configured — set CONTACT_TO_EMAIL in Cloudflare Worker secrets or .env.");
+        logger.error(
+          "[contact] Destination email not configured — set CONTACT_TO_EMAIL in Cloudflare Worker secrets or .env.",
+          undefined,
+          logOpts
+        );
         throw new ActionError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Your message could not be sent. Please email me directly.",
@@ -44,9 +54,10 @@ export const server = {
       if (sendEmailBinding) {
         // Cloudflare Email Routing Workers API
         if (!from) {
-          console.error(
-            "[contact] Cloudflare SEND_EMAIL binding found, but CONTACT_FROM_EMAIL is not set. " +
-              "Cloudflare requires a verified sender domain email."
+          logger.error(
+            "[contact] Cloudflare SEND_EMAIL binding found, but CONTACT_FROM_EMAIL is not set. Cloudflare requires a verified sender domain email.",
+            undefined,
+            logOpts
           );
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
@@ -61,21 +72,24 @@ export const server = {
         );
 
         if (!result.ok) {
-          console.error("[contact] Cloudflare email send failed:", result.reason);
+          logger.error("[contact] Cloudflare email send failed", { reason: result.reason }, logOpts);
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Your message could not be sent. Please email me directly.",
           });
         }
 
+        logger.info("[contact] Successfully dispatched email via Cloudflare SEND_EMAIL", { to, from }, logOpts);
         return { ok: true as const };
       }
 
       // 2. Fallback to Resend API
       const apiKey = await getEnvVar("RESEND_API_KEY", context.locals);
       if (!apiKey) {
-        console.error(
-          "[contact] Cloudflare SEND_EMAIL binding not found, and RESEND_API_KEY is not configured in Cloudflare Worker secrets or .env."
+        logger.error(
+          "[contact] Cloudflare SEND_EMAIL binding not found, and RESEND_API_KEY is not configured in Cloudflare Worker secrets or .env.",
+          undefined,
+          logOpts
         );
         throw new ActionError({
           code: "INTERNAL_SERVER_ERROR",
@@ -92,13 +106,14 @@ export const server = {
       if (!result.ok) {
         // Log the provider's real answer (it can name the account); never show it to the visitor.
         const contextMsg = result.reason === "provider" ? `provider ${result.status}` : result.reason;
-        console.error(`[contact] Resend send failed (${contextMsg}):`, result.detail);
+        logger.error(`[contact] Resend send failed (${contextMsg})`, { detail: result.detail, status: result.status }, logOpts);
         throw new ActionError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Your message could not be sent. Please email me directly.",
         });
       }
 
+      logger.info("[contact] Successfully dispatched email via Resend", { to, from: resendFrom }, logOpts);
       return { ok: true as const };
     },
   }),

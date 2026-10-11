@@ -6,7 +6,10 @@
 	"compatibility_flags": ["nodejs_compat"],
 	"vars": {
 		"CONTACT_FROM_EMAIL": "noreply@coin-radar.com",
-		"CONTACT_TO_EMAIL": "admin@coin-radar.com"
+		"CONTACT_TO_EMAIL": "admin@coin-radar.com",
+		"LOKI_PUSH_URL": "https://loki.open.org.vn/loki/api/v1/push",
+		"LOKI_ENABLED": "true",
+		"LOKI_APP": "coinradar-emdash"
 	},
 	"d1_databases": [
 		{
